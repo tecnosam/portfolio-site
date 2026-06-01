@@ -1,21 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Clock, Calendar, Bot } from "lucide-react";
+import { ArrowRight, Clock, Calendar } from "lucide-react";
 import { blogPosts } from "@/lib/blog-posts";
 
 export default function BlogPage() {
-  const [showAI, setShowAI] = useState(true);
-
-  const sorted = [...blogPosts].sort((a, b) => {
-    if (a.aiGenerated === b.aiGenerated) return 0;
-    return a.aiGenerated ? 1 : -1;
-  });
-
-  const visible = sorted.filter((p) => showAI || !p.aiGenerated);
-  const featured = visible.filter((p) => p.featured);
-  const rest = visible.filter((p) => !p.featured);
+  const featured = blogPosts.filter((p) => p.featured);
+  const rest = blogPosts.filter((p) => !p.featured);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
@@ -26,28 +17,6 @@ export default function BlogPage() {
           Production AI systems, backend engineering at scale, and hard lessons from shipping ML infrastructure that actually works.
         </p>
       </div>
-
-      {/* Filter */}
-      <div className="flex items-center gap-3 mb-10">
-        <span className="text-xs text-base-content/40 font-medium uppercase tracking-wider">Filter</span>
-        <button
-          onClick={() => setShowAI((v) => !v)}
-          className={`flex items-center gap-1.5 badge badge-sm cursor-pointer transition-all ${
-            showAI
-              ? "badge-primary badge-soft"
-              : "badge-ghost border border-base-300 text-base-content/40"
-          }`}
-        >
-          <Bot size={10} />
-          AI Generated
-        </button>
-      </div>
-
-      {visible.length === 0 && (
-        <div className="text-center py-20 text-base-content/30 text-sm">
-          No posts match the current filter.
-        </div>
-      )}
 
       {/* Featured */}
       {featured.length > 0 && (
@@ -65,11 +34,6 @@ export default function BlogPage() {
                     {post.tags.map((tag) => (
                       <span key={tag} className="badge badge-primary badge-soft badge-sm">{tag}</span>
                     ))}
-                    {post.aiGenerated && (
-                      <span className="badge badge-ghost border border-base-300 badge-sm flex items-center gap-1 text-base-content/40">
-                        <Bot size={9} /> AI Generated
-                      </span>
-                    )}
                   </div>
                   <h2 className="card-title text-base font-bold text-base-content group-hover:text-primary transition-colors leading-snug">
                     {post.title}
@@ -104,16 +68,9 @@ export default function BlogPage() {
               >
                 <div className="card-body p-4 flex-row items-center gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-sm text-base-content group-hover:text-primary transition-colors leading-snug">
-                        {post.title}
-                      </h3>
-                      {post.aiGenerated && (
-                        <span className="badge badge-ghost border border-base-300 badge-xs flex items-center gap-1 text-base-content/30">
-                          <Bot size={8} /> AI
-                        </span>
-                      )}
-                    </div>
+                    <h3 className="font-semibold text-sm text-base-content group-hover:text-primary transition-colors leading-snug">
+                      {post.title}
+                    </h3>
                     <div className="flex items-center gap-3 mt-2 text-base-content/40 text-xs flex-wrap">
                       <span>{post.date} · {post.readTime} read</span>
                       <div className="flex gap-1.5">
