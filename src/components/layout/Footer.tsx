@@ -21,7 +21,7 @@ const aiLinks = [
 
 export default function Footer() {
   return (
-    <footer className="footer footer-center sm:footer-horizontal bg-neutral text-neutral-content p-10 mt-24">
+    <footer className="footer footer-center sm:footer-horizontal bg-neutral text-neutral-content p-10">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full max-w-5xl text-left">
         {/* Brand */}
         <div className="space-y-3">

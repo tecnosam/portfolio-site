@@ -71,14 +71,14 @@ export default function OpenSourcePage() {
         <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Portfolio</p>
         <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">Open Source</h1>
         <p className="text-base-content/50 max-w-xl text-base leading-relaxed">
-          134 repositories, 410 contributions in the last year. Here are the projects I&apos;ve shipped publicly - from production tools to systems programming exercises.
+          Here are the projects I&apos;ve shipped publicly - from production tools to systems programming exercises.
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-14">
         {[
-          { icon: <GithubIcon size={16} />, value: "134",  label: "Repositories" },
+          { icon: <GithubIcon size={16} />, value: "60+",  label: "Repositories" },
           { icon: <Users size={16} />,     value: "108",  label: "Followers" },
           { icon: <Star size={16} />,      value: "45+",  label: "Stars earned" },
         ].map((s) => (
