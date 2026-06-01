@@ -8,14 +8,14 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Samuel Abolo - Agentic AI Engineer",
+  title: "Samuel Abolo - Senior Software Engineer",
   description:
-    "Senior AI Engineer with 5+ years shipping production LLM systems. Expert in multi-agent orchestration, RAG pipelines, and distributed backend systems.",
-  keywords: ["AI Engineer", "Backend Engineer", "LLM", "RAG", "Agentic AI", "Samuel Abolo"],
+    "Senior Software Engineer with 5+ years shipping production systems. Expert in multi-agent orchestration, RAG pipelines, and distributed backend systems.",
+  keywords: [ "Abolo Samuel", "Samuel Abolo", "Samuel Ikechukwu Abolo", "Samuel Abolo Portfolio", "AI Engineer", "Backend Engineer", "Machine Learning", "MLOps"],
   authors: [{ name: "Samuel Abolo" }],
   openGraph: {
-    title: "Samuel Abolo - Agentic AI Engineer",
-    description: "Senior AI Engineer building production LLM systems and AI agent backends.",
+    title: "Samuel Abolo: Senior Software Engineer",
+    description: "Senior Software Engineer building production LLM systems and distributed backends.",
     type: "website",
   },
 };
