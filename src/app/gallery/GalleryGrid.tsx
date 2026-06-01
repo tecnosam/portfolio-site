@@ -79,18 +79,17 @@ export default function GalleryGrid() {
         <div className="modal modal-open">
           <div className="modal-box max-w-5xl p-0 overflow-hidden flex flex-col md:flex-row" style={{ maxHeight: "90vh" }}>
             {/* Full image - no crop */}
-            <div className="md:w-3/5 flex-shrink-0 bg-neutral flex items-center justify-center">
+            <div className="md:w-3/5 flex-shrink-0 bg-neutral flex items-center justify-center max-h-[45vh] md:max-h-none">
               <Image
                 src={selected.src}
                 alt={selected.alt}
                 width={900}
                 height={900}
-                className="w-full h-auto object-contain"
-                style={{ maxHeight: "90vh" }}
+                className="w-full h-auto object-contain max-h-[45vh] md:max-h-none"
               />
             </div>
             {/* Content */}
-            <div className="md:w-2/5 p-8 flex flex-col justify-center bg-base-100 overflow-y-auto">
+            <div className="md:w-2/5 p-5 md:p-8 flex flex-col justify-center bg-base-100 overflow-y-auto">
               <span className="badge badge-primary badge-soft badge-sm mb-3">{selected.category}</span>
               <h3 className="text-xl font-bold text-base-content mb-4 leading-snug">{selected.caption}</h3>
               <p className="text-base-content/60 text-sm leading-relaxed">{selected.context}</p>

@@ -18,11 +18,13 @@ function ContactForm() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [inquiryRef, setInquiryRef] = useState<string | null>(null);
+  const [jdRef, setJdRef] = useState<string | null>(null);
 
   useEffect(() => {
     const subject = searchParams.get("subject") ?? "";
     const message = searchParams.get("message") ?? "";
     const ref = searchParams.get("ref") ?? "";
+    const jd = searchParams.get("jd_ref") ?? "";
 
     if (subject || message) {
       setForm((f) => ({ ...f, subject, message }));
@@ -41,18 +43,46 @@ function ContactForm() {
             }));
           }
         })
-        .catch(() => {/* ignore — form stays empty */});
+        .catch(() => {});
+    }
+
+    if (jd) {
+      setJdRef(jd);
+      fetch(`/api/jd-submissions/${jd}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.inferredRole) {
+            const msg = [
+              `Hi Samuel,`,
+              ``,
+              `I used your JD Fit Analyzer and got a ${data.fitScore}/100 fit score for a ${data.inferredRole} position.`,
+              ``,
+              data.verdict ? `"${data.verdict}"` : "",
+              ``,
+              `I'd love to connect about this role.`,
+            ].filter((l) => l !== undefined).join("\n").trim();
+            setForm((f) => ({
+              ...f,
+              subject: f.subject || `Re: ${data.inferredRole} — ${data.fitScore}/100 fit`,
+              message: f.message || msg,
+            }));
+          }
+        })
+        .catch(() => {});
     }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
+    const refFooter = jdRef
+      ? `\n\n— JD Reference: ${jdRef}`
+      : inquiryRef
+      ? `\n\n— AI Analysis Ref: ${inquiryRef}`
+      : "";
     const payload = {
       ...form,
-      message: inquiryRef
-        ? `${form.message}\n\n— AI Analysis Ref: ${inquiryRef}`
-        : form.message,
+      message: form.message + refFooter,
     };
     try {
       const res = await fetch("/api/contact", {
@@ -88,7 +118,7 @@ function ContactForm() {
     <div className="card bg-base-100 border border-base-300 shadow-sm">
       <div className="card-body p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="form-control">
               <label className="label"><span className="label-text text-xs font-medium">Name</span></label>
               <input
@@ -135,6 +165,11 @@ function ContactForm() {
               <span className="font-medium">Context saved.</span> Sam will have your full AI analysis when reviewing this message.
             </div>
           )}
+          {jdRef && (
+            <div className="alert alert-success alert-soft text-xs gap-2">
+              <span className="font-medium">JD saved.</span> Sam will have the full job description for reference when he reads this.
+            </div>
+          )}
           {status === "error" && (
             <div className="alert alert-error alert-soft text-xs">
               Something went wrong. Email me directly at {profile.email}
@@ -152,10 +187,10 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <div className="mb-12">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Say Hello</p>
-        <h1 className="text-5xl font-black text-base-content mb-3">Contact</h1>
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">Contact</h1>
         <p className="text-base-content/50 max-w-xl text-base leading-relaxed">
           Whether you want to collaborate, have a role in mind, or just want to talk shop about AI systems - my inbox is open.
         </p>

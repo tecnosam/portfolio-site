@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { FileSearch, Download, Star, AlertCircle, CheckCircle2, Sparkles, Upload, FileText, X } from "lucide-react";
+import { FileSearch, Download, Star, AlertCircle, CheckCircle2, Sparkles, Upload, FileText, X, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { profile } from "@/lib/data";
 
 type Analysis = {
@@ -50,12 +51,15 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 export default function JDAnalyzerPage() {
+  const router = useRouter();
   const [jd, setJd] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<"text" | "file">("text");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [processedJD, setProcessedJD] = useState("");
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,11 +76,36 @@ export default function JDAnalyzerPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setAnalysis(data);
+      setProcessedJD(data.processedJobDescription ?? jd);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Analysis failed");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleReachOut = async () => {
+    if (!analysis) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/jd-submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobDescription: processedJD,
+          inferredRole: analysis.tailoredResume.relevantExperience[0]?.role ?? "",
+          fitScore: analysis.fitScore,
+          verdict: analysis.verdict,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        router.push(`/contact?jd_ref=${data.id}`);
+        return;
+      }
+    } catch { /* fall through */ }
+    finally { setSaving(false); }
+    router.push("/contact");
   };
 
   const downloadResume = async () => {
@@ -87,34 +116,44 @@ export default function JDAnalyzerPage() {
       const doc = new jsPDF({ unit: "mm", format: "a4" });
 
       const PW = 210, PH = 297;
-      const ML = 18, MR = 18, MT = 18, MB = 16;
+      const ML = 18, MR = 18, MT = 16, MB = 16;
       const CW = PW - ML - MR;
       let y = MT;
 
-      // Keep content off the bottom margin; add a page when needed
+      // Primary brand colour (oklch 50% 0.22 293 ≈ slate-indigo)
+      const C_PRIMARY:  [number,number,number] = [79, 43, 188];
+      const C_DARK:     [number,number,number] = [15, 23, 42];
+      const C_MID:      [number,number,number] = [71, 85, 105];
+      const C_LIGHT:    [number,number,number] = [100, 116, 139];
+      const C_SUBTLE:   [number,number,number] = [226, 232, 240];
+      const C_BODY:     [number,number,number] = [51, 65, 85];
+
       const need = (h: number) => {
         if (y + h > PH - MB) { doc.addPage(); y = MT; }
       };
 
-      // ── Section heading ──────────────────────────────
+      // ── Section header with colour accent bar ────────
       const section = (title: string) => {
-        need(12);
+        need(14);
+        doc.setFillColor(...C_PRIMARY);
+        doc.rect(ML, y, 2, 5.5, "F");
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(7.5);
-        doc.setTextColor(100, 116, 139);
-        doc.text(title, ML, y);
-        y += 2;
-        doc.setDrawColor(226, 232, 240);
-        doc.setLineWidth(0.25);
-        doc.line(ML, y, PW - MR, y);
-        y += 4.5;
+        doc.setFontSize(8);
+        doc.setTextColor(...C_PRIMARY);
+        doc.text(title, ML + 4, y + 4);
+        y += 5.5;
+        doc.setDrawColor(...C_SUBTLE);
+        doc.setLineWidth(0.2);
+        doc.line(ML + 4, y + 0.5, PW - MR, y + 0.5);
+        y += 5;
       };
 
       // ── Wrapped body text ────────────────────────────
-      const bodyText = (
+      const body = (
         text: string,
-        { indent = 0, size = 9, color = [51, 65, 85] as [number, number, number], leading = 4.8 } = {}
+        opts: { indent?: number; size?: number; color?: [number,number,number]; leading?: number } = {}
       ) => {
+        const { indent = 0, size = 9, color = C_BODY, leading = 5 } = opts;
         const lines = doc.splitTextToSize(text, CW - indent) as string[];
         need(lines.length * leading);
         doc.setFont("helvetica", "normal");
@@ -124,80 +163,79 @@ export default function JDAnalyzerPage() {
         y += lines.length * leading;
       };
 
-      // ── Header ───────────────────────────────────────
+      // ══ HEADER ═══════════════════════════════════════
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(24);
-      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(26);
+      doc.setTextColor(...C_DARK);
       doc.text("Samuel Abolo", ML, y);
-      y += 8;
+      y += 2;
+      // Thick primary rule under name
+      doc.setDrawColor(...C_PRIMARY);
+      doc.setLineWidth(1.8);
+      doc.line(ML, y + 1, PW - MR, y + 1);
+      y += 6;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10.5);
-      doc.setTextColor(71, 85, 105);
+      doc.setTextColor(...C_MID);
       doc.text("Agentic AI Engineer  ·  Backend Systems  ·  LLM Infrastructure", ML, y);
-      y += 5.5;
+      y += 5;
 
+      // Contact — row 1
       doc.setFontSize(8.5);
-      doc.setTextColor(100, 116, 139);
-      const contactLine = [
-        profile.email,
-        profile.phone,
-        "linkedin.com/in/samuel-abolo-24431a176",
-        "github.com/tecnosam",
-      ].join("   ·   ");
-      const contactLines = doc.splitTextToSize(contactLine, CW) as string[];
-      doc.text(contactLines, ML, y);
-      y += contactLines.length * 4.5 + 4;
+      doc.setTextColor(...C_LIGHT);
+      doc.text(`${profile.email}   |   ${profile.phone}`, ML, y);
+      y += 4.5;
+      // Contact — row 2
+      doc.text("linkedin.com/in/samuel-abolo-24431a176   |   github.com/tecnosam", ML, y);
+      y += 8;
 
-      doc.setDrawColor(203, 213, 225);
-      doc.setLineWidth(0.4);
-      doc.line(ML, y, PW - MR, y);
-      y += 6;
-
-      // ── Summary ──────────────────────────────────────
+      // ══ SUMMARY ══════════════════════════════════════
       section("PROFESSIONAL SUMMARY");
-      bodyText(analysis.tailoredResume.summary);
+      body(analysis.tailoredResume.summary, { color: C_BODY });
       y += 4;
 
-      // ── Skills ───────────────────────────────────────
-      section("KEY SKILLS");
-      bodyText(analysis.tailoredResume.topSkills.join("   ·   "));
+      // ══ KEY SKILLS ═══════════════════════════════════
+      section("KEY SKILLS FOR THIS ROLE");
+      // Skills as a wrapped comma-separated line with primary colour dots
+      body(analysis.tailoredResume.topSkills.join("  ·  "), { color: C_BODY });
       y += 4;
 
-      // ── Experience ───────────────────────────────────
+      // ══ EXPERIENCE ═══════════════════════════════════
       section("RELEVANT EXPERIENCE");
 
       analysis.tailoredResume.relevantExperience.forEach((exp, i) => {
-        need(18);
+        need(20);
 
-        // Company (left) + Period (right)
+        // Company (bold, dark) + period (right, light)
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(9.5);
-        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(10);
+        doc.setTextColor(...C_DARK);
         doc.text(exp.company, ML, y);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8.5);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(...C_LIGHT);
         doc.text(exp.period, PW - MR, y, { align: "right" });
         y += 5;
 
-        // Role
+        // Role (italic, mid)
         doc.setFont("helvetica", "italic");
         doc.setFontSize(9);
-        doc.setTextColor(71, 85, 105);
+        doc.setTextColor(...C_MID);
         doc.text(exp.role, ML, y);
-        y += 5;
+        y += 5.5;
 
-        // Bullets
+        // Bullets with primary colour marker
         exp.tailoredBullets.forEach((bullet) => {
-          const bLines = doc.splitTextToSize(bullet, CW - 5) as string[];
-          need(bLines.length * 4.8);
+          const bLines = doc.splitTextToSize(bullet, CW - 6) as string[];
+          need(bLines.length * 5);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(51, 65, 85);
-          doc.text("-", ML, y);
-          doc.text(bLines, ML + 4.5, y);
-          y += bLines.length * 4.8;
+          doc.setTextColor(...C_PRIMARY);
+          doc.text(">", ML, y);
+          doc.setTextColor(...C_BODY);
+          doc.text(bLines, ML + 5, y);
+          y += bLines.length * 5;
         });
 
         if (i < analysis.tailoredResume.relevantExperience.length - 1) y += 4;
@@ -205,23 +243,51 @@ export default function JDAnalyzerPage() {
 
       y += 5;
 
-      // ── Why Hire ─────────────────────────────────────
-      section("WHY HIRE SAMUEL");
-      bodyText(analysis.tailoredResume.whyHire);
+      // ══ WHY HIRE ═════════════════════════════════════
+      section("WHY HIRE SAMUEL FOR THIS ROLE");
+      // Shaded callout box
+      need(20);
+      const whyLines = doc.splitTextToSize(analysis.tailoredResume.whyHire, CW - 8) as string[];
+      const boxH = whyLines.length * 5 + 6;
+      doc.setFillColor(243, 240, 255); // very light primary tint
+      doc.roundedRect(ML, y, CW, boxH, 2, 2, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...C_BODY);
+      doc.text(whyLines, ML + 4, y + 4.5);
+      y += boxH + 5;
 
-      // ── Footer ───────────────────────────────────────
+      // ══ EDUCATION ════════════════════════════════════
+      section("EDUCATION");
+      need(16);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C_DARK);
+      doc.text("Babcock University", ML, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C_LIGHT);
+      doc.text("2021 – 2024", PW - MR, y, { align: "right" });
+      y += 5;
+      doc.setFontSize(9);
+      doc.setTextColor(...C_MID);
+      doc.text("B.Sc. Software Engineering  ·  Valedictorian 2020", ML, y);
+      y += 4.5;
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C_LIGHT);
+      doc.text("Thesis: ML-Based Predictive Model for Colorectal Cancer Patient Survival", ML, y);
+
+      // ══ FOOTER (every page) ══════════════════════════
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalPages: number = (doc.internal as any).getNumberOfPages();
       for (let p = 1; p <= totalPages; p++) {
         doc.setPage(p);
         doc.setFont("helvetica", "italic");
         doc.setFontSize(7);
-        doc.setTextColor(148, 163, 184);
+        doc.setTextColor(...C_SUBTLE);
         doc.text(
-          "AI-tailored resume · samuelabolo.dev · Full resume available at /Samuel_Abolo_Resume.pdf",
-          PW / 2,
-          PH - 8,
-          { align: "center" }
+          "AI-tailored resume · samuelabolo.dev · Full resume at /Samuel_Abolo_Resume.pdf",
+          PW / 2, PH - 7, { align: "center" }
         );
       }
 
@@ -232,9 +298,9 @@ export default function JDAnalyzerPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <div className="mb-10">
-        <h1 className="text-5xl font-black text-base-content mb-3">JD Fit Analyzer</h1>
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">JD Fit Analyzer</h1>
         <p className="text-base-content/50 text-base max-w-xl">
           Paste or upload any job description. Get a fit score, highlighted strengths, gap analysis, and a tailored resume - in seconds.
         </p>
@@ -320,6 +386,28 @@ export default function JDAnalyzerPage() {
               </div>
             </div>
           </div>
+
+          {/* Reach Out CTA — only for near-perfect fits */}
+          {analysis.fitScore > 90 && (
+            <div className="card bg-success text-success-content shadow-sm">
+              <div className="card-body p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="font-bold text-lg mb-1">This looks like a great match.</p>
+                  <p className="text-success-content/75 text-sm leading-relaxed">
+                    A {analysis.fitScore}/100 fit score is a strong signal. Samuel would love to hear about this role — reach out directly.
+                  </p>
+                </div>
+                <button
+                  onClick={handleReachOut}
+                  disabled={saving}
+                  className="btn bg-white text-success hover:bg-white/90 gap-2 flex-shrink-0"
+                >
+                  {saving ? <span className="loading loading-spinner loading-sm" /> : <ArrowRight size={15} />}
+                  {saving ? "Preparing..." : "Reach Out"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Strengths */}
           <div className="card bg-base-100 border border-base-300 shadow-sm">

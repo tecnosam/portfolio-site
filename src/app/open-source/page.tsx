@@ -66,10 +66,10 @@ const statusStyle: Record<string, string> = {
 
 export default function OpenSourcePage() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <div className="mb-12">
         <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Portfolio</p>
-        <h1 className="text-5xl font-black text-base-content mb-3">Open Source</h1>
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">Open Source</h1>
         <p className="text-base-content/50 max-w-xl text-base leading-relaxed">
           134 repositories, 410 contributions in the last year. Here are the projects I&apos;ve shipped publicly - from production tools to systems programming exercises.
         </p>

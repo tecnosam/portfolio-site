@@ -18,10 +18,10 @@ export default function BlogPage() {
   const rest = visible.filter((p) => !p.featured);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <div className="mb-12">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Writing</p>
-        <h1 className="text-5xl font-black text-base-content mb-3">Blog</h1>
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">Blog</h1>
         <p className="text-base-content/50 max-w-xl text-base leading-relaxed">
           Production AI systems, backend engineering at scale, and hard lessons from shipping ML infrastructure that actually works.
         </p>
@@ -137,7 +137,7 @@ export default function BlogPage() {
           <p className="text-base-content/40 text-xs mt-0.5">Articles on AI systems, backend engineering, and software craft.</p>
         </div>
         <a
-          href="https://medium.com/@samuel_abolo"
+          href="https://ikabolo59.medium.com"
           target="_blank"
           rel="noopener noreferrer"
           className="btn btn-neutral btn-sm gap-2 flex-shrink-0"

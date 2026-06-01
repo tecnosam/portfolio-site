@@ -256,8 +256,8 @@ export default function AskSamPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 flex flex-col" style={{ height: "calc(100vh - 64px)" }}>
-      <div className="py-8 flex-shrink-0">
-        <h1 className="text-5xl font-black text-base-content mb-2">Ask About Sam</h1>
+      <div className="py-4 sm:py-8 flex-shrink-0">
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-2">Ask About Sam</h1>
         <p className="text-base-content/50 text-sm">
           Chat with an AI that knows Samuel&apos;s full background. Ask about skills, experience, projects, or anything else.
         </p>

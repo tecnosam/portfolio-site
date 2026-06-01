@@ -27,7 +27,10 @@ export async function generateWithRetry(
   const request = json
     ? {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" },
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 8192,
+        },
       }
     : prompt;
 

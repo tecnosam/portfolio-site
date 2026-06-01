@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getModel, generateWithRetry } from "@/lib/gemini";
-import { resumeContext } from "@/lib/data";
 import { checksum, getCached, setCached } from "@/lib/cache";
+import { embedText } from "@/lib/embeddings";
+import { querySimilar } from "@/lib/pinecone";
 
 export async function POST(req: NextRequest) {
   const { businessInfo } = await req.json();
@@ -14,12 +15,24 @@ export async function POST(req: NextRequest) {
   const cached = await getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
+  let profileContext = "";
+  try {
+    const embedding = await embedText(businessInfo.slice(0, 600));
+    const matches = await querySimilar(embedding, 10);
+    profileContext = matches
+      .filter((m) => m.score && m.score > 0.45)
+      .map((m) => (m.metadata as { text: string }).text)
+      .join("\n\n");
+  } catch (err) {
+    console.error("RAG retrieval error:", err);
+  }
+
   const model = getModel("gemini-2.5-flash");
 
-  const prompt = `You are Samuel Abolo, a Senior Agentic AI Engineer. A business has shared their context with you. Generate a detailed, specific, and genuinely useful analysis of how YOU (Samuel) can help their business.
+  const prompt = `You are Samuel Abolo, a Senior Software Engineer. A business has shared their context with you. Generate a detailed, specific, and genuinely useful analysis of how YOU (Samuel) can help their business.
 
 YOUR PROFILE:
-${resumeContext}
+${profileContext || "Senior Software Engineer with 5+ years across ML, AI systems, backend engineering, and MLOps."}
 
 BUSINESS INFORMATION SHARED:
 ${businessInfo}

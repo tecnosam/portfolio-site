@@ -73,10 +73,10 @@ const universityActivities = [
 
 export default function CommunitiesPage() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <div className="mb-12">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Involvement</p>
-        <h1 className="text-5xl font-black text-base-content mb-3">Communities</h1>
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">Communities</h1>
         <p className="text-base-content/50 max-w-xl text-base leading-relaxed">
           Building up the African tech ecosystem. Here&apos;s where I invest time outside of day-to-day engineering work - speaking, mentoring, connecting.
         </p>

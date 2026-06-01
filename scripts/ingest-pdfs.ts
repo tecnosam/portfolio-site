@@ -13,18 +13,48 @@ const pdfParse = createRequire(path.join(process.cwd(), "__dummy__"))("pdf-parse
 
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 
-const CHUNK_SIZE = 800;
-const CHUNK_OVERLAP = 150;
+const MAX_CHUNK = 900;
 
+// Paragraph-aware chunking — never splits mid-paragraph so company sections
+// stay intact and different companies never bleed into the same chunk.
 function chunkText(text: string): string[] {
+  // Normalise whitespace while preserving paragraph breaks
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter((p) => p.length > 20);
+
   const chunks: string[] = [];
-  let start = 0;
-  while (start < text.length) {
-    const end = Math.min(start + CHUNK_SIZE, text.length);
-    chunks.push(text.slice(start, end).trim());
-    if (end === text.length) break;
-    start += CHUNK_SIZE - CHUNK_OVERLAP;
+  let current = "";
+
+  for (const para of paragraphs) {
+    if (current.length === 0) {
+      current = para;
+    } else if (current.length + para.length + 2 <= MAX_CHUNK) {
+      current += "\n\n" + para;
+    } else {
+      chunks.push(current);
+      // If a single paragraph is larger than MAX_CHUNK, split it on sentences
+      if (para.length > MAX_CHUNK) {
+        const sentences = para.match(/[^.!?]+[.!?]+/g) ?? [para];
+        let sub = "";
+        for (const s of sentences) {
+          if (sub.length + s.length > MAX_CHUNK) {
+            if (sub) chunks.push(sub.trim());
+            sub = s;
+          } else {
+            sub += " " + s;
+          }
+        }
+        if (sub.trim()) current = sub.trim();
+        else current = "";
+      } else {
+        current = para;
+      }
+    }
   }
+
+  if (current) chunks.push(current);
   return chunks.filter((c) => c.length > 50);
 }
 
@@ -34,6 +64,18 @@ async function embedText(text: string): Promise<number[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await model.embedContent({ content: { parts: [{ text }], role: "user" }, outputDimensionality: 768 } as any);
   return result.embedding.values;
+}
+
+// Remove any previously ingested chunks for this source so stale vectors
+// from a different chunking run don't pollute retrieval results.
+async function deleteExistingChunks(index: ReturnType<Pinecone["index"]>, source: string) {
+  // Generate the range of possible old IDs (generous upper bound of 200)
+  const ids = Array.from({ length: 200 }, (_, i) => `${source}-chunk-${i}`);
+  try {
+    await index.deleteMany({ ids });
+  } catch {
+    // Ignore — some IDs may not exist, that is fine
+  }
 }
 
 async function ingestPdf(filePath: string, source: string) {
@@ -50,10 +92,14 @@ async function ingestPdf(filePath: string, source: string) {
   const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
   const index = pc.index(process.env.PINECONE_INDEX_NAME!);
 
+  // Clean up old vectors for this source before inserting new ones
+  process.stdout.write(`  Removing old chunks for ${source}...\r`);
+  await deleteExistingChunks(index, source);
+
   const vectors = [];
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    process.stdout.write(`  Embedding chunk ${i + 1}/${chunks.length}...\r`);
+    process.stdout.write(`  Embedding chunk ${i + 1}/${chunks.length}...    \r`);
     const values = await embedText(chunk);
     vectors.push({
       id: `${source}-chunk-${i}`,

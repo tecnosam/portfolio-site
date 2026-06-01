@@ -15,14 +15,16 @@ export default function HomePage() {
   return (
     <div>
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden">
-        {/* Dot-grid background */}
-        <div className="dot-grid absolute inset-0 opacity-60" />
-        {/* Soft purple glow */}
-        <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
+      <section className="relative">
+        {/* Background layer — overflow-hidden here only so backgrounds stay contained
+            while the floating photo badges can overflow outside the section freely */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="dot-grid absolute inset-0 opacity-60" />
+          <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-primary/8 rounded-full blur-[100px]" />
+        </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 pt-14 pb-24">
-          <div className="flex flex-col md:flex-row items-center gap-12 md:gap-16">
+        <div className="relative max-w-6xl mx-auto px-6 pt-10 pb-20 sm:pt-14 sm:pb-24">
+          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
 
             {/* ── Left content ── */}
             <div className="flex-1 space-y-7 animate-fade-up">
@@ -91,18 +93,18 @@ export default function HomePage() {
                 />
               </div>
               {/* Floating badge - current role */}
-              <div className="absolute -bottom-6 -left-6 animate-float">
-                <div className="card bg-base-100 shadow-xl border border-base-300 px-5 py-3.5">
-                  <p className="text-[11px] text-base-content/40 uppercase tracking-widest mb-0.5">Currently at</p>
-                  <p className="text-base font-black text-base-content">Boostr</p>
-                  <p className="text-sm text-primary font-medium">Agentic AI Platform</p>
+              <div className="absolute -bottom-5 -left-3 sm:-bottom-6 sm:-left-6 animate-float">
+                <div className="card bg-base-100 shadow-xl border border-base-300 px-3 py-2.5 sm:px-5 sm:py-3.5">
+                  <p className="text-[10px] text-base-content/40 uppercase tracking-widest mb-0.5">Currently at</p>
+                  <p className="text-sm sm:text-base font-black text-base-content">Boostr</p>
+                  <p className="text-xs sm:text-sm text-primary font-medium">Agentic AI Platform</p>
                 </div>
               </div>
               {/* Floating badge - years */}
-              <div className="absolute -top-5 -right-5 animate-float" style={{ animationDelay: "2.5s" }}>
-                <div className="card bg-primary text-primary-content shadow-xl px-4 py-3 text-center">
-                  <p className="text-2xl font-black leading-none">5+</p>
-                  <p className="text-[11px] font-medium opacity-80 mt-0.5">Years Shipping<br />Production Systems</p>
+              <div className="absolute -top-4 -right-3 sm:-top-5 sm:-right-5 animate-float" style={{ animationDelay: "2.5s" }}>
+                <div className="card bg-primary text-primary-content shadow-xl px-3 py-2 sm:px-4 sm:py-3 text-center">
+                  <p className="text-xl sm:text-2xl font-black leading-none">5+</p>
+                  <p className="text-[10px] font-medium opacity-80 mt-0.5">Years Shipping<br />Production Systems</p>
                 </div>
               </div>
             </div>
@@ -115,9 +117,9 @@ export default function HomePage() {
 
       {/* ── AI Features ── */}
       <section className="bg-base-200 border-b border-base-300">
-        <div className="max-w-6xl mx-auto px-6 py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-base-content mb-3">Explore Interactively</h2>
+            <h2 className="text-2xl sm:text-4xl font-black text-base-content mb-3">Explore Interactively</h2>
             <p className="text-base-content/50 text-base max-w-md mx-auto">
               This portfolio goes beyond static pages - use AI to interact with my profile in ways that actually matter to you.
             </p>
@@ -184,21 +186,23 @@ export default function HomePage() {
       </section>
 
       {/* ── Skills ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <div className="mb-12">
           <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Expertise</p>
-          <h2 className="text-4xl font-black text-base-content">Skills &amp; Stack</h2>
+          <h2 className="text-2xl sm:text-4xl font-black text-base-content">Skills &amp; Stack</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {skills.map((sg) => (
             <div key={sg.category} className="card bg-base-100 border border-base-300 card-lift shadow-sm">
               <div className="card-body p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{sg.icon}</span>
-                    <h3 className="font-black text-base-content text-lg">{sg.category}</h3>
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="shrink-0 text-2xl">{sg.icon}</span>
+                    <h3 className="truncate font-black text-base-content text-lg">{sg.category}</h3>
                   </div>
-                  <span className="badge badge-ghost border border-base-300 text-base-content/40 text-xs">{sg.items.length} skills</span>
+                  <span className="badge badge-ghost shrink-0 whitespace-nowrap border border-base-300 text-base-content/40 text-xs">
+                    {sg.items.length} skills
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {sg.items.map((item) => (
@@ -215,11 +219,11 @@ export default function HomePage() {
 
       {/* ── Experience ── */}
       <section className="bg-base-200 border-t border-base-300">
-        <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="mb-12 flex items-end justify-between">
             <div>
               <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Career</p>
-              <h2 className="text-4xl font-black text-base-content">Experience</h2>
+              <h2 className="text-2xl sm:text-4xl font-black text-base-content">Experience</h2>
             </div>
             <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer"
               className="btn btn-outline btn-sm gap-2">

@@ -13,7 +13,7 @@ export const profile = {
     github: "https://github.com/tecnosam",
     twitter: "https://twitter.com/samuel_abolo",
   },
-  resumeUrl: "/Samuel_Abolo_Resume.pdf",
+  resumeUrl: "/Samuel_Abolo_CV.pdf",
 };
 
 export const skills = [

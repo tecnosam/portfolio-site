@@ -70,9 +70,9 @@ export default function HowCanIHelpPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
       <div className="mb-10">
-        <h1 className="text-5xl font-black text-base-content mb-3">How Can I Help?</h1>
+        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">How Can I Help?</h1>
         <p className="text-base-content/50 text-base max-w-xl">
           Tell me about your business, team, tech stack, and challenges. Get a specific, honest analysis of how Samuel Abolo can add value.
         </p>
@@ -134,14 +134,18 @@ export default function HowCanIHelpPage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {analysis.immediateWins.map((win, i) => (
-                  <div key={i} className="bg-base-200/50 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="badge badge-warning badge-soft badge-sm">{win.area}</span>
-                      <span className="text-[10px] text-base-content/40">{win.timeframe}</span>
+                  <div key={i} className="rounded-xl bg-base-200/50 p-4">
+                    <div className="mb-3 space-y-1.5 border-b border-base-300/60 pb-3">
+                      <h3 className="text-sm font-semibold leading-snug text-warning">{win.area}</h3>
+                      <p className="text-[10px] leading-relaxed text-base-content/40">{win.timeframe}</p>
                     </div>
-                    <p className="text-base-content/50 text-xs mb-2"><span className="font-medium text-base-content/70">Problem:</span> {win.problem}</p>
-                    <p className="text-base-content font-semibold text-sm mb-2">{win.solution}</p>
-                    <p className="text-success text-xs"><span className="text-base-content/40">Impact:</span> {win.impact}</p>
+                    <p className="mb-2 text-xs text-base-content/50">
+                      <span className="font-medium text-base-content/70">Problem:</span> {win.problem}
+                    </p>
+                    <p className="mb-2 text-sm font-semibold leading-relaxed text-base-content">{win.solution}</p>
+                    <p className="text-xs text-success">
+                      <span className="text-base-content/40">Impact:</span> {win.impact}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -205,12 +209,22 @@ export default function HowCanIHelpPage() {
               <h2 className="card-title text-sm gap-2 mb-4">
                 <Lightbulb size={16} className="text-success" /> How We Could Work Together
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                className={`grid gap-4 ${
+                  analysis.engagementModels.length === 1
+                    ? "grid-cols-1"
+                    : analysis.engagementModels.length === 2
+                      ? "grid-cols-1 sm:grid-cols-2"
+                      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                }`}
+              >
                 {analysis.engagementModels.map((model, i) => (
-                  <div key={i} className="bg-base-200/40 rounded-xl p-4">
-                    <span className="badge badge-success badge-soft badge-sm mb-2">{model.type}</span>
-                    <p className="text-base-content/60 text-xs mb-2 leading-relaxed">{model.description}</p>
-                    <p className="text-base-content/40 text-[10px]"><span className="font-medium">Best for:</span> {model.bestFor}</p>
+                  <div key={i} className="flex flex-col rounded-xl bg-base-200/40 p-4">
+                    <h3 className="mb-2 text-sm font-semibold leading-snug text-success">{model.type}</h3>
+                    <p className="mb-2 flex-1 text-xs leading-relaxed text-base-content/60">{model.description}</p>
+                    <p className="text-[10px] text-base-content/40">
+                      <span className="font-medium">Best for:</span> {model.bestFor}
+                    </p>
                   </div>
                 ))}
               </div>

@@ -40,6 +40,16 @@ type CustomKit = {
   whyNow: string;
   topAchievements: { achievement: string; relevance: string }[];
   suggestedSubject: string;
+  relevantExperience?: {
+    company: string;
+    role: string;
+    period: string;
+    highlights: string[];
+  }[];
+  relevantSkills?: {
+    category: string;
+    items: string[];
+  }[];
 };
 
 export default function ReferMeClient() {
@@ -54,6 +64,25 @@ export default function ReferMeClient() {
 
   const pitch = customKit?.elevatorPitch ?? DEFAULT_PITCH;
   const strengths = customKit?.keyStrengths ?? DEFAULT_STRENGTHS;
+
+  const currentCompany = experience.find((e) => e.current)?.company;
+
+  const displayExperience = customKit?.relevantExperience
+    ? customKit.relevantExperience
+    : experience.slice(0, 3).map((e) => ({
+        company: e.company,
+        role: e.role,
+        period: e.period,
+        highlights: e.highlights.slice(0, 2),
+      }));
+
+  const displaySkills = customKit?.relevantSkills
+    ? customKit.relevantSkills.map((rs) => ({
+        category: rs.category,
+        icon: skills.find((s) => s.category === rs.category)?.icon ?? "⚡",
+        items: rs.items,
+      }))
+    : skills.slice(0, 4);
 
   const canCustomize = (inputMode === "title" && jobTitle.trim()) || (inputMode === "text" && jdText.trim()) || (inputMode === "file" && !!file);
 
@@ -132,10 +161,26 @@ export default function ReferMeClient() {
             {error && <div className="alert alert-error alert-soft text-xs mt-2">{error}</div>}
 
             {customKit && (
-              <div className="alert alert-success alert-soft text-xs mt-3">
-                <Check size={13} />
-                <span>Customized for: <strong>{customKit.inferredRole}</strong></span>
-                {customKit.suggestedSubject && <span className="ml-2 text-base-content/50">· Suggested subject: {customKit.suggestedSubject}</span>}
+              <div className="mt-3 rounded-lg border border-success/25 bg-success/5 p-3">
+                <div className="flex items-start gap-2">
+                  <Check size={14} className="mt-0.5 shrink-0 text-success" />
+                  <div className="min-w-0 space-y-2">
+                    <p className="text-xs leading-snug">
+                      <span className="text-base-content/50">Customized for </span>
+                      <strong className="text-base-content">{customKit.inferredRole}</strong>
+                    </p>
+                    {customKit.suggestedSubject && (
+                      <div className="rounded-md border border-base-300 bg-base-100/70 px-3 py-2">
+                        <p className="mb-1 text-[10px] font-medium uppercase tracking-widest text-base-content/40">
+                          Suggested subject
+                        </p>
+                        <p className="text-xs leading-relaxed text-base-content/70 break-words">
+                          {customKit.suggestedSubject}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -213,16 +258,23 @@ export default function ReferMeClient() {
         {/* Experience */}
         <div className="card bg-base-100 border border-base-300 shadow-sm">
           <div className="card-body p-6">
-            <h2 className="font-bold text-base-content text-sm mb-4">Recent Experience</h2>
+            <h2 className="font-bold text-base-content text-sm mb-4">
+              Relevant Experience
+              {customKit?.relevantExperience && (
+                <span className="badge badge-primary badge-soft badge-xs ml-2">AI Tailored</span>
+              )}
+            </h2>
             <div className="space-y-5">
-              {experience.slice(0, 3).map((exp, i) => (
+              {displayExperience.map((exp, i) => (
                 <div key={i} className="border-l-2 border-base-300 pl-4">
-                  {exp.current && <span className="badge badge-success badge-soft badge-xs mb-1">Current</span>}
+                  {exp.company === currentCompany && (
+                    <span className="badge badge-success badge-soft badge-xs mb-1">Current</span>
+                  )}
                   <p className="font-semibold text-base-content text-sm">{exp.company}</p>
                   <p className="text-primary text-xs">{exp.role}</p>
                   <p className="text-base-content/40 text-xs mb-2">{exp.period}</p>
                   <ul className="space-y-1">
-                    {exp.highlights.slice(0, 2).map((h, j) => (
+                    {exp.highlights.map((h, j) => (
                       <li key={j} className="text-base-content/60 text-xs">· {h}</li>
                     ))}
                   </ul>
@@ -235,9 +287,14 @@ export default function ReferMeClient() {
         {/* Skills */}
         <div className="card bg-base-100 border border-base-300 shadow-sm">
           <div className="card-body p-6">
-            <h2 className="font-bold text-base-content text-sm mb-4">Skills Snapshot</h2>
+            <h2 className="font-bold text-base-content text-sm mb-4">
+              Skills Snapshot
+              {customKit?.relevantSkills && (
+                <span className="badge badge-primary badge-soft badge-xs ml-2">AI Tailored</span>
+              )}
+            </h2>
             <div className="space-y-3">
-              {skills.slice(0, 4).map((sg) => (
+              {displaySkills.map((sg) => (
                 <div key={sg.category} className="flex items-start gap-3">
                   <span className="text-base flex-shrink-0">{sg.icon}</span>
                   <div>
