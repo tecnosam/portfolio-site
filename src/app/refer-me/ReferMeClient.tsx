@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Copy, Check, Loader2, Sparkles, Upload, FileText, X, Download, Mail, CheckCircle2 } from "lucide-react";
+import { Copy, Check, Loader2, Sparkles, Upload, FileText, X, Mail, CheckCircle2 } from "lucide-react";
+import { track } from "@vercel/analytics/react";
+import DownloadResumeLink from "@/components/ui/DownloadResumeLink";
 import ReactMarkdown from "react-markdown";
 import { profile, experience, skills, education, certifications } from "@/lib/data";
 import { LinkedinIcon } from "@/components/ui/SocialIcons";
@@ -97,6 +99,7 @@ export default function ReferMeClient() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setCustomKit(data);
+      track("ai_refer_me_customized", { role: data.inferredRole });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to customize");
     } finally {
@@ -364,9 +367,9 @@ export default function ReferMeClient() {
           </div>
         </div>
 
-        <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full gap-2">
-          <Download size={14} /> Download Full Resume
-        </a>
+        <DownloadResumeLink href={profile.resumeUrl} source="refer_me" variant="primary">
+          Download Full Resume
+        </DownloadResumeLink>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { FileSearch, Download, Star, AlertCircle, CheckCircle2, Sparkles, Upload, FileText, X, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { track } from "@vercel/analytics/react";
 import { profile } from "@/lib/data";
 
 type Analysis = {
@@ -77,6 +78,7 @@ export default function JDAnalyzerPage() {
       if (!res.ok) throw new Error(data.error);
       setAnalysis(data);
       setProcessedJD(data.processedJobDescription ?? jd);
+      track("ai_jd_analyzer_used", { fitScore: data.fitScore });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Analysis failed");
     } finally {

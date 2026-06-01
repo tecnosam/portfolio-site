@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import DownloadResumeLink from "@/components/ui/DownloadResumeLink";
 import {
-  Mail, ArrowRight, MapPin, Download, ExternalLink,
+  Mail, ArrowRight, MapPin,
   Sparkles, MessageSquare, FileSearch, Zap, HelpCircle,
   TrendingUp, Clock, BarChart3,
 } from "lucide-react";
@@ -57,9 +58,7 @@ export default function HomePage() {
                 <Link href="/contact" className="btn btn-primary gap-2">
                   Get in touch <ArrowRight size={16} />
                 </Link>
-                <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline gap-2">
-                  <Download size={16} /> Resume
-                </a>
+                <DownloadResumeLink href={profile.resumeUrl} source="hero" />
               </div>
 
               <div className="flex items-center gap-1">
@@ -225,10 +224,9 @@ export default function HomePage() {
               <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Career</p>
               <h2 className="text-2xl sm:text-4xl font-black text-base-content">Experience</h2>
             </div>
-            <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer"
-              className="btn btn-outline btn-sm gap-2">
-              Full Resume <ExternalLink size={14} />
-            </a>
+            <DownloadResumeLink href={profile.resumeUrl} source="experience" variant="link">
+              Full Resume
+            </DownloadResumeLink>
           </div>
 
           <div className="space-y-5">

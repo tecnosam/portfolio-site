@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Send, RotateCcw, Bot, ArrowRight, FileSearch, Lightbulb, Users, HeartCrack } from "lucide-react";
+import { track } from "@vercel/analytics/react";
 import ReactMarkdown from "react-markdown";
 import type { Recommendation } from "@/app/api/ask-sam/route";
 
@@ -203,6 +204,7 @@ export default function AskSamPage() {
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     setLoading(true);
     incrementLocalUsage();
+    track("ai_ask_sam_message_sent");
 
     try {
       const res = await fetch("/api/ask-sam", {

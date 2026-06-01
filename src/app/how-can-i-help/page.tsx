@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { HelpCircle, Sparkles, ArrowRight, Lightbulb, Target, Wrench, AlertCircle } from "lucide-react";
+import { track } from "@vercel/analytics/react";
 
 type Analysis = {
   headline: string;
@@ -40,6 +41,7 @@ export default function HowCanIHelpPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setAnalysis(data);
+      track("ai_how_can_i_help_used");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Analysis failed");
     } finally {
