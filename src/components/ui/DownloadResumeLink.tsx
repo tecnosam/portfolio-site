@@ -1,18 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { track } from "@vercel/analytics/react";
-import { Download, ExternalLink } from "lucide-react";
+import { FileText, ExternalLink } from "lucide-react";
 
 type Props = {
-  href: string;
   source: "hero" | "experience" | "refer_me";
   variant?: "outline" | "primary" | "link";
   children?: React.ReactNode;
 };
 
-export default function DownloadResumeLink({ href, source, variant = "outline", children }: Props) {
-  const handleClick = () => track("resume_downloaded", { source });
-
+// Redirects to the Refer Me page instead of downloading a static PDF.
+// The full generated resume lives there.
+export default function DownloadResumeLink({ source, variant = "outline", children }: Props) {
   const cls =
     variant === "primary"
       ? "btn btn-primary w-full gap-2"
@@ -21,9 +21,13 @@ export default function DownloadResumeLink({ href, source, variant = "outline", 
       : "btn btn-outline gap-2";
 
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick} className={cls}>
-      {variant === "link" ? <ExternalLink size={14} /> : <Download size={16} />}
+    <Link
+      href="/refer-me?from=resume"
+      onClick={() => track("resume_link_clicked", { source })}
+      className={cls}
+    >
+      {variant === "link" ? <ExternalLink size={14} /> : <FileText size={16} />}
       {children ?? "Resume"}
-    </a>
+    </Link>
   );
 }

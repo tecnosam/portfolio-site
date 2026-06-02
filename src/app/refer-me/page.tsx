@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Sparkles } from "lucide-react";
 import ReferMeClient from "./ReferMeClient";
 
@@ -13,7 +14,9 @@ export default function ReferMePage() {
           Referring someone should be easy. Enter a job title or paste a JD to get an AI-customized pitch and key strengths - then copy and send.
         </p>
       </div>
-      <ReferMeClient />
+      <Suspense fallback={<div className="skeleton h-96 w-full rounded-xl" />}>
+        <ReferMeClient />
+      </Suspense>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Copy, Check, Loader2, Sparkles, Upload, FileText, X, Mail, CheckCircle2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Copy, Check, Loader2, Sparkles, Upload, FileText, X, Mail, CheckCircle2, Download } from "lucide-react";
 import { track } from "@vercel/analytics/react";
-import DownloadResumeLink from "@/components/ui/DownloadResumeLink";
 import ReactMarkdown from "react-markdown";
 import { profile, experience, skills, education, certifications } from "@/lib/data";
 import { LinkedinIcon } from "@/components/ui/SocialIcons";
@@ -55,12 +55,16 @@ type CustomKit = {
 };
 
 export default function ReferMeClient() {
+  const searchParams = useSearchParams();
+  const fromResume = searchParams.get("from") === "resume";
+
   const [jobTitle, setJobTitle] = useState("");
   const [jdText, setJdText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<"title" | "text" | "file">("title");
   const [customKit, setCustomKit] = useState<CustomKit | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,6 +92,179 @@ export default function ReferMeClient() {
 
   const canCustomize = (inputMode === "title" && jobTitle.trim()) || (inputMode === "text" && jdText.trim()) || (inputMode === "file" && !!file);
 
+  const stripMd = (s: string) => s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1");
+
+  const downloadResume = async () => {
+    setDownloading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+      const PW = 210, PH = 297;
+      const ML = 18, MR = 18, MT = 16, MB = 16;
+      const CW = PW - ML - MR;
+      let y = MT;
+
+      const C_PRIMARY: [number,number,number] = [79, 43, 188];
+      const C_DARK:    [number,number,number] = [15, 23, 42];
+      const C_MID:     [number,number,number] = [71, 85, 105];
+      const C_LIGHT:   [number,number,number] = [100, 116, 139];
+      const C_SUBTLE:  [number,number,number] = [226, 232, 240];
+      const C_BODY:    [number,number,number] = [51, 65, 85];
+
+      const need = (h: number) => { if (y + h > PH - MB) { doc.addPage(); y = MT; } };
+
+      const section = (title: string) => {
+        need(14);
+        doc.setFillColor(...C_PRIMARY);
+        doc.rect(ML, y, 2, 5.5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...C_PRIMARY);
+        doc.text(title, ML + 4, y + 4);
+        y += 5.5;
+        doc.setDrawColor(...C_SUBTLE);
+        doc.setLineWidth(0.2);
+        doc.line(ML + 4, y + 0.5, PW - MR, y + 0.5);
+        y += 5;
+      };
+
+      const body = (text: string, indent = 0, color = C_BODY, leading = 5) => {
+        const lines = doc.splitTextToSize(text, CW - indent) as string[];
+        need(lines.length * leading);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(...color);
+        doc.text(lines, ML + indent, y);
+        y += lines.length * leading;
+      };
+
+      // ── Header ─────────────────────────────────────────────
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(26);
+      doc.setTextColor(...C_DARK);
+      doc.text("Samuel Abolo", ML, y);
+      y += 2;
+      doc.setDrawColor(...C_PRIMARY);
+      doc.setLineWidth(1.8);
+      doc.line(ML, y + 1, PW - MR, y + 1);
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+      doc.setTextColor(...C_MID);
+      doc.text("Senior Software Engineer  ·  Backend Systems  ·  LLM Infrastructure", ML, y);
+      y += 5;
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C_LIGHT);
+      doc.text(`${profile.email}   |   ${profile.phone}`, ML, y);
+      y += 4.5;
+      doc.text("linkedin.com/in/samuel-abolo-24431a176   |   github.com/tecnosam", ML, y);
+      y += 9;
+
+      // ── Summary ────────────────────────────────────────────
+      section("PROFESSIONAL SUMMARY");
+      body(stripMd(pitch));
+      y += 4;
+
+      // ── Key Strengths ──────────────────────────────────────
+      section("KEY STRENGTHS");
+      strengths.forEach((s) => {
+        const lines = doc.splitTextToSize(stripMd(s), CW - 5) as string[];
+        need(lines.length * 4.8);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(...C_PRIMARY);
+        doc.text(">", ML, y);
+        doc.setTextColor(...C_BODY);
+        doc.text(lines, ML + 5, y);
+        y += lines.length * 4.8;
+      });
+      y += 4;
+
+      // ── Experience ─────────────────────────────────────────
+      section("RELEVANT EXPERIENCE");
+      displayExperience.forEach((exp, i) => {
+        need(20);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...C_DARK);
+        doc.text(exp.company, ML, y);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C_LIGHT);
+        doc.text(exp.period, PW - MR, y, { align: "right" });
+        y += 5;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(9);
+        doc.setTextColor(...C_MID);
+        doc.text(exp.role, ML, y);
+        y += 5.5;
+        exp.highlights.forEach((h) => {
+          const hl = doc.splitTextToSize(h, CW - 6) as string[];
+          need(hl.length * 5);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(...C_PRIMARY);
+          doc.text(">", ML, y);
+          doc.setTextColor(...C_BODY);
+          doc.text(hl, ML + 5, y);
+          y += hl.length * 5;
+        });
+        if (i < displayExperience.length - 1) y += 4;
+      });
+      y += 5;
+
+      // ── Skills ─────────────────────────────────────────────
+      section("SKILLS");
+      displaySkills.forEach((sg) => {
+        need(10);
+        // Use a small filled square instead of emoji (Helvetica doesn't support emoji)
+        doc.setFillColor(...C_PRIMARY);
+        doc.rect(ML, y - 2.5, 2, 2.5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C_DARK);
+        doc.text(sg.category, ML + 4, y);
+        y += 4.5;
+        body(sg.items.join("  ·  "), 4, C_MID, 4.5);
+        y += 2;
+      });
+      y += 3;
+
+      // ── Education ──────────────────────────────────────────
+      section("EDUCATION");
+      need(16);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...C_DARK);
+      doc.text("Babcock University", ML, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...C_LIGHT);
+      doc.text("2021 – 2024", PW - MR, y, { align: "right" });
+      y += 5;
+      doc.setFontSize(9);
+      doc.setTextColor(...C_MID);
+      doc.text("B.Sc. Software Engineering  ·  Valedictorian 2020", ML, y);
+
+      // ── Footer ─────────────────────────────────────────────
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pages: number = (doc.internal as any).getNumberOfPages();
+      for (let p = 1; p <= pages; p++) {
+        doc.setPage(p);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7);
+        doc.setTextColor(...C_SUBTLE);
+        doc.text("samuelabolo.dev", PW / 2, PH - 7, { align: "center" });
+      }
+
+      doc.save("Samuel_Abolo_Resume.pdf");
+      track("resume_downloaded", { source: "refer_me_generated" });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const customize = async () => {
     setLoading(true); setError("");
     try {
@@ -108,6 +285,23 @@ export default function ReferMeClient() {
   };
 
   return (
+    <>
+    {fromResume && (
+      <div className="mb-6 rounded-xl border border-primary/25 bg-primary/5 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex-1">
+          <p className="font-bold text-base-content text-base mb-1">You came here for the resume.</p>
+          <p className="text-base-content/60 text-sm leading-relaxed">
+            Optionally tailor it to a specific role using the AI customizer below, then hit <strong>Download Resume</strong> in the sidebar — it generates a fresh PDF from the current data.
+          </p>
+        </div>
+        <button
+          onClick={() => { const el = document.getElementById("resume-download-btn"); el?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+          className="btn btn-primary btn-sm gap-2 flex-shrink-0"
+        >
+          <Download size={13} /> Download Resume
+        </button>
+      </div>
+    )}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main content */}
       <div className="lg:col-span-2 space-y-5">
@@ -367,10 +561,17 @@ export default function ReferMeClient() {
           </div>
         </div>
 
-        <DownloadResumeLink href={profile.resumeUrl} source="refer_me" variant="primary">
-          Download Full Resume
-        </DownloadResumeLink>
+        <button
+          id="resume-download-btn"
+          onClick={downloadResume}
+          disabled={downloading}
+          className="btn btn-primary w-full gap-2"
+        >
+          {downloading ? <span className="loading loading-spinner loading-sm" /> : <Download size={14} />}
+          {downloading ? "Generating..." : "Download Resume"}
+        </button>
       </div>
     </div>
+    </>
   );
 }

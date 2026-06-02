@@ -135,6 +135,10 @@ const starters = [
   "What kind of roles is Sam looking for?",
   "What are Sam's hobbies?",
   "Tell me about Sam's multi-agent work",
+  "What's Samuel's Elo in Chess?",
+  "Is Sam open to relocation?",
+  "What's Sam's educational background?",
+  "Tell me about Sam's side projects",
 ];
 
 const CTA_QUESTION_THRESHOLD = 5;
@@ -313,7 +317,7 @@ export default function AskSamPage() {
           <div className="px-5 pb-3">
             <p className="text-[10px] uppercase tracking-widest text-base-content/30 mb-2">Suggested</p>
             <div className="flex flex-wrap gap-2">
-              {starters.slice(0, 4).map((s) => (
+              {starters.map((s) => (
                 <button
                   key={s}
                   onClick={() => send(s)}

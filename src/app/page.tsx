@@ -58,7 +58,7 @@ export default function HomePage() {
                 <Link href="/contact" className="btn btn-primary gap-2">
                   Get in touch <ArrowRight size={16} />
                 </Link>
-                <DownloadResumeLink href={profile.resumeUrl} source="hero" />
+                <DownloadResumeLink source="hero" />
               </div>
 
               <div className="flex items-center gap-1">
@@ -224,8 +224,8 @@ export default function HomePage() {
               <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Career</p>
               <h2 className="text-2xl sm:text-4xl font-black text-base-content">Experience</h2>
             </div>
-            <DownloadResumeLink href={profile.resumeUrl} source="experience" variant="link">
-              Full Resume
+            <DownloadResumeLink source="experience" variant="link">
+              View Resume
             </DownloadResumeLink>
           </div>
 
