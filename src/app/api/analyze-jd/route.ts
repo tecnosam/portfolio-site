@@ -29,21 +29,29 @@ The tailoredResume section should be detailed and high-quality — this is the m
     { "company": "<company>", "achievement": "<achievement>", "relevance": "<one sentence>" }
   ],
   "tailoredResume": {
-    "summary": "<3 sentences that directly connect Samuel's specific background to this role — name relevant companies/technologies, be concrete not generic>",
-    "topSkills": ["<skill explicitly required by JD>", "<skill2>", "<skill3>", "<skill4>", "<skill5>"],
+    "summary": "<2-3 sentences. State Samuel's title, years of experience, and the 2-3 most relevant things he has done. Name actual companies and technologies. No generic filler.>",
+    "topSkills": ["<skill explicitly listed in JD>", "<skill2>", "<skill3>", "<skill4>", "<skill5>"],
     "relevantExperience": [
       {
         "company": "<company from Samuel's background>",
         "role": "<exact role title>",
         "period": "<period>",
         "tailoredBullets": [
-          "<strong action verb + specific achievement + quantified metric, showing direct fit for THIS JD's requirements>",
-          "<bullet 2 — different aspect relevant to JD>",
-          "<bullet 3 — third key contribution relevant to JD>"
+          "<action verb + what was built + tech stack used + quantified result. Stop there. No clause explaining why it matters for the role. No 'directly,' 'crucial for,' 'demonstrating expertise in,' 'precisely aligning,' or 'establishing.' No em dashes.>",
+          "<bullet 2 — same format: verb, what, tech, number. Choose accomplishments whose keywords naturally overlap with the JD without stating the overlap.>",
+          "<bullet 3>"
         ]
       }
     ],
-    "whyHire": "<2 compelling sentences making the case for Samuel specifically for THIS role — reference specific requirements from the JD and how Samuel's background meets them>"
+    "whyHire": "<2 sentences. Concrete: name the role requirement, name the specific Samuel achievement that meets it. No vague praise.>",
+    "education": [
+      {
+        "institution": "<institution name exactly as it appears in the documents>",
+        "degree": "<degree or qualification>",
+        "period": "<years>",
+        "note": "<thesis title, or achievement such as Valedictorian, if present in documents — otherwise omit this field>"
+      }
+    ]
   },
   "verdict": "<one impactful sentence>"
 }`;
@@ -68,9 +76,10 @@ async function extractTextFromFile(file: File): Promise<string> {
 
 async function fetchRAGContext(query: string): Promise<string> {
   const embedding = await embedText(query);
-  const matches = await querySimilar(embedding, 10);
+  // Fetch all vectors (index has ~13) so the AI sees the full document set,
+  // not just the semantically closest chunks — prevents skills/tools from being dropped.
+  const matches = await querySimilar(embedding, 20);
   return matches
-    .filter((m) => m.score && m.score > 0.45)
     .map((m) => (m.metadata as { text: string }).text)
     .join("\n\n");
 }
@@ -102,7 +111,7 @@ export async function POST(req: NextRequest) {
 
   let profileContext = "";
   try {
-    profileContext = await fetchRAGContext(jobDescription.slice(0, 600));
+    profileContext = await fetchRAGContext(jobDescription);
   } catch (err) {
     console.error("RAG retrieval error:", err);
   }

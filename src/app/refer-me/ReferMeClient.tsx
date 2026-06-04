@@ -98,165 +98,138 @@ export default function ReferMeClient() {
     setDownloading(true);
     try {
       const { jsPDF } = await import("jspdf");
+      // Letter is slightly more standard for US job applications; A4 also fine
       const doc = new jsPDF({ unit: "mm", format: "a4" });
 
       const PW = 210, PH = 297;
-      const ML = 18, MR = 18, MT = 16, MB = 16;
+      // Narrow margins to maximise usable space while staying readable
+      const ML = 15, MR = 15, MT = 14;
       const CW = PW - ML - MR;
       let y = MT;
 
-      const C_PRIMARY: [number,number,number] = [79, 43, 188];
-      const C_DARK:    [number,number,number] = [15, 23, 42];
-      const C_MID:     [number,number,number] = [71, 85, 105];
-      const C_LIGHT:   [number,number,number] = [100, 116, 139];
-      const C_SUBTLE:  [number,number,number] = [226, 232, 240];
-      const C_BODY:    [number,number,number] = [51, 65, 85];
+      // ── ATS-safe palette: black + dark grey only ─────────
+      const BLACK:     [number,number,number] = [0,   0,   0  ];
+      const DARK:      [number,number,number] = [30,  30,  30 ];
+      const MID:       [number,number,number] = [70,  70,  70 ];
+      const RULE:      [number,number,number] = [160, 160, 160];
 
-      const need = (h: number) => { if (y + h > PH - MB) { doc.addPage(); y = MT; } };
-
-      const section = (title: string) => {
-        need(14);
-        doc.setFillColor(...C_PRIMARY);
-        doc.rect(ML, y, 2, 5.5, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(...C_PRIMARY);
-        doc.text(title, ML + 4, y + 4);
-        y += 5.5;
-        doc.setDrawColor(...C_SUBTLE);
-        doc.setLineWidth(0.2);
-        doc.line(ML + 4, y + 0.5, PW - MR, y + 0.5);
-        y += 5;
+      // ── Helpers ──────────────────────────────────────────
+      const txt = (
+        text: string,
+        x: number,
+        bold = false,
+        size = 9.5,
+        color = DARK,
+        align: "left" | "right" | "center" = "left"
+      ) => {
+        doc.setFont("helvetica", bold ? "bold" : "normal");
+        doc.setFontSize(size);
+        doc.setTextColor(...color);
+        doc.text(text, x, y, { align });
       };
 
-      const body = (text: string, indent = 0, color = C_BODY, leading = 5) => {
+      const wrap = (text: string, indent = 0, bold = false, size = 9.5, color = DARK, leading = 4.8) => {
         const lines = doc.splitTextToSize(text, CW - indent) as string[];
-        need(lines.length * leading);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
+        doc.setFont("helvetica", bold ? "bold" : "normal");
+        doc.setFontSize(size);
         doc.setTextColor(...color);
         doc.text(lines, ML + indent, y);
         y += lines.length * leading;
       };
 
-      // ── Header ─────────────────────────────────────────────
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(26);
-      doc.setTextColor(...C_DARK);
-      doc.text("Samuel Abolo", ML, y);
+      const section = (title: string) => {
+        y += 3;
+        txt(title, ML, true, 9.5, BLACK);
+        y += 1.5;
+        doc.setDrawColor(...RULE);
+        doc.setLineWidth(0.3);
+        doc.line(ML, y, PW - MR, y);
+        y += 4.5;
+      };
+
+      // ════════════════════════════════════════════════════
+      // HEADER
+      // ════════════════════════════════════════════════════
+      txt("SAMUEL ABOLO", ML, true, 20, BLACK);
+      y += 7;
+      txt("Senior Software Engineer  |  Backend Systems  |  LLM Infrastructure", ML, false, 9.5, MID);
+      y += 5;
+      // All contact on one line — ATS parses left-to-right cleanly
+      const contact = [profile.email, profile.phone, "linkedin.com/in/samuel-abolo-24431a176", "github.com/tecnosam"].join("  |  ");
+      wrap(contact, 0, false, 8.5, MID, 4.5);
       y += 2;
-      doc.setDrawColor(...C_PRIMARY);
-      doc.setLineWidth(1.8);
-      doc.line(ML, y + 1, PW - MR, y + 1);
-      y += 6;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10.5);
-      doc.setTextColor(...C_MID);
-      doc.text("Senior Software Engineer  ·  Backend Systems  ·  LLM Infrastructure", ML, y);
-      y += 5;
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C_LIGHT);
-      doc.text(`${profile.email}   |   ${profile.phone}`, ML, y);
-      y += 4.5;
-      doc.text("linkedin.com/in/samuel-abolo-24431a176   |   github.com/tecnosam", ML, y);
-      y += 9;
+      doc.setDrawColor(...RULE);
+      doc.setLineWidth(0.4);
+      doc.line(ML, y, PW - MR, y);
 
-      // ── Summary ────────────────────────────────────────────
+      // ════════════════════════════════════════════════════
+      // SUMMARY
+      // ════════════════════════════════════════════════════
       section("PROFESSIONAL SUMMARY");
-      body(stripMd(pitch));
-      y += 4;
+      wrap(stripMd(pitch), 0, false, 9.5, DARK, 4.8);
 
-      // ── Key Strengths ──────────────────────────────────────
+      // ════════════════════════════════════════════════════
+      // KEY STRENGTHS  (top 5 to stay on one page)
+      // ════════════════════════════════════════════════════
       section("KEY STRENGTHS");
-      strengths.forEach((s) => {
-        const lines = doc.splitTextToSize(stripMd(s), CW - 5) as string[];
-        need(lines.length * 4.8);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(...C_PRIMARY);
-        doc.text(">", ML, y);
-        doc.setTextColor(...C_BODY);
-        doc.text(lines, ML + 5, y);
-        y += lines.length * 4.8;
+      strengths.slice(0, 5).forEach((s) => {
+        wrap(`- ${stripMd(s)}`, 3, false, 9.5, DARK, 4.8);
       });
-      y += 4;
 
-      // ── Experience ─────────────────────────────────────────
-      section("RELEVANT EXPERIENCE");
-      displayExperience.forEach((exp, i) => {
-        need(20);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(...C_DARK);
-        doc.text(exp.company, ML, y);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C_LIGHT);
-        doc.text(exp.period, PW - MR, y, { align: "right" });
+      // ════════════════════════════════════════════════════
+      // EXPERIENCE
+      // ════════════════════════════════════════════════════
+      section("EXPERIENCE");
+      displayExperience.slice(0, 3).forEach((exp, i) => {
+        // Company bold, period on same line right-aligned
+        txt(exp.company, ML, true, 9.5, BLACK);
+        txt(exp.period, PW - MR, false, 9, MID, "right");
         y += 5;
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(9);
-        doc.setTextColor(...C_MID);
-        doc.text(exp.role, ML, y);
-        y += 5.5;
-        exp.highlights.forEach((h) => {
-          const hl = doc.splitTextToSize(h, CW - 6) as string[];
-          need(hl.length * 5);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(9);
-          doc.setTextColor(...C_PRIMARY);
-          doc.text(">", ML, y);
-          doc.setTextColor(...C_BODY);
-          doc.text(hl, ML + 5, y);
-          y += hl.length * 5;
+        // Role on its own line
+        txt(`${exp.role}`, ML, false, 9.5, MID);
+        y += 5;
+        // Bullets — max 2 per role for 1-page constraint
+        exp.highlights.slice(0, 2).forEach((h) => {
+          wrap(`- ${h}`, 3, false, 9.5, DARK, 4.8);
         });
-        if (i < displayExperience.length - 1) y += 4;
+        if (i < displayExperience.length - 1) y += 3;
       });
-      y += 5;
 
-      // ── Skills ─────────────────────────────────────────────
+      // ════════════════════════════════════════════════════
+      // SKILLS  (inline per category — no emoji, ATS-safe)
+      // ════════════════════════════════════════════════════
       section("SKILLS");
       displaySkills.forEach((sg) => {
-        need(10);
-        // Use a small filled square instead of emoji (Helvetica doesn't support emoji)
-        doc.setFillColor(...C_PRIMARY);
-        doc.rect(ML, y - 2.5, 2, 2.5, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C_DARK);
-        doc.text(sg.category, ML + 4, y);
-        y += 4.5;
-        body(sg.items.join("  ·  "), 4, C_MID, 4.5);
-        y += 2;
+        // "Category Name: item, item, item" on one wrapped line
+        wrap(`${sg.category}: ${sg.items.join(", ")}`, 0, false, 9.5, DARK, 4.8);
+        y += 1.5;
       });
-      y += 3;
 
-      // ── Education ──────────────────────────────────────────
+      // ════════════════════════════════════════════════════
+      // EDUCATION
+      // ════════════════════════════════════════════════════
       section("EDUCATION");
-      need(16);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(...C_DARK);
-      doc.text("Babcock University", ML, y);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C_LIGHT);
-      doc.text("2021 – 2024", PW - MR, y, { align: "right" });
+      education.forEach((edu, i) => {
+        txt(edu.institution, ML, true, 9.5, BLACK);
+        txt(edu.period, PW - MR, false, 9, MID, "right");
+        y += 5;
+        const degreeLine = "achievement" in edu && edu.achievement
+          ? `${edu.degree}  |  ${edu.achievement}`
+          : edu.degree;
+        txt(degreeLine, ML, false, 9.5, MID);
+        y += 4.5;
+        if ("thesis" in edu && edu.thesis) {
+          const thLines = doc.splitTextToSize(`Thesis: ${edu.thesis}`, CW) as string[];
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(...MID);
+          doc.text(thLines, ML, y);
+          y += thLines.length * 4;
+        }
+        if (i < education.length - 1) y += 2;
+      });
       y += 5;
-      doc.setFontSize(9);
-      doc.setTextColor(...C_MID);
-      doc.text("B.Sc. Software Engineering  ·  Valedictorian 2020", ML, y);
-
-      // ── Footer ─────────────────────────────────────────────
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pages: number = (doc.internal as any).getNumberOfPages();
-      for (let p = 1; p <= pages; p++) {
-        doc.setPage(p);
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(7);
-        doc.setTextColor(...C_SUBTLE);
-        doc.text("samuelabolo.dev", PW / 2, PH - 7, { align: "center" });
-      }
+      txt("Thesis: ML-Based Predictive Model for Colorectal Cancer Patient Survival", ML, false, 8.5, MID);
 
       doc.save("Samuel_Abolo_Resume.pdf");
       track("resume_downloaded", { source: "refer_me_generated" });

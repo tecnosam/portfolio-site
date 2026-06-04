@@ -17,6 +17,7 @@ type Analysis = {
     topSkills: string[];
     relevantExperience: { company: string; role: string; period: string; tailoredBullets: string[] }[];
     whyHire: string;
+    education: { institution: string; degree: string; period: string; note?: string }[];
   };
   verdict: string;
 };
@@ -118,180 +119,143 @@ export default function JDAnalyzerPage() {
       const doc = new jsPDF({ unit: "mm", format: "a4" });
 
       const PW = 210, PH = 297;
-      const ML = 18, MR = 18, MT = 16, MB = 16;
+      const ML = 13, MR = 13, MT = 13, MB = 13;
       const CW = PW - ML - MR;
       let y = MT;
 
-      // Primary brand colour (oklch 50% 0.22 293 ≈ slate-indigo)
-      const C_PRIMARY:  [number,number,number] = [79, 43, 188];
-      const C_DARK:     [number,number,number] = [15, 23, 42];
-      const C_MID:      [number,number,number] = [71, 85, 105];
-      const C_LIGHT:    [number,number,number] = [100, 116, 139];
-      const C_SUBTLE:   [number,number,number] = [226, 232, 240];
-      const C_BODY:     [number,number,number] = [51, 65, 85];
+      // Near-black palette — no purple anywhere
+      const INK:   [number,number,number] = [26,  26,  26];   // #1a1a1a — name, headings, company
+      const BODY:  [number,number,number] = [45,  45,  45];   // body text
+      const MID:   [number,number,number] = [90,  90,  90];   // role titles, contact
+      const LIGHT: [number,number,number] = [140, 140, 140];  // dates
+      const RULE:  [number,number,number] = [200, 200, 200];  // section rule
 
-      const need = (h: number) => {
-        if (y + h > PH - MB) { doc.addPage(); y = MT; }
-      };
+      // Leading at ~1.2x for 10pt (3.53mm per pt → 10pt = 3.53mm → 1.2x = 4.25mm)
+      const L = 4.2;
 
-      // ── Section header with colour accent bar ────────
-      const section = (title: string) => {
-        need(14);
-        doc.setFillColor(...C_PRIMARY);
-        doc.rect(ML, y, 2, 5.5, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(...C_PRIMARY);
-        doc.text(title, ML + 4, y + 4);
-        y += 5.5;
-        doc.setDrawColor(...C_SUBTLE);
-        doc.setLineWidth(0.2);
-        doc.line(ML + 4, y + 0.5, PW - MR, y + 0.5);
-        y += 5;
-      };
-
-      // ── Wrapped body text ────────────────────────────
-      const body = (
-        text: string,
-        opts: { indent?: number; size?: number; color?: [number,number,number]; leading?: number } = {}
-      ) => {
-        const { indent = 0, size = 9, color = C_BODY, leading = 5 } = opts;
+      const wrap = (text: string, indent = 0, size = 10, color = BODY) => {
         const lines = doc.splitTextToSize(text, CW - indent) as string[];
-        need(lines.length * leading);
-        doc.setFont("helvetica", "normal");
         doc.setFontSize(size);
         doc.setTextColor(...color);
         doc.text(lines, ML + indent, y);
-        y += lines.length * leading;
+        y += lines.length * L;
       };
 
-      // ══ HEADER ═══════════════════════════════════════
+      const section = (title: string) => {
+        y += 3.5;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(...INK);
+        doc.text(title, ML, y);
+        y += 1.5;
+        doc.setDrawColor(...RULE);
+        doc.setLineWidth(0.25);
+        doc.line(ML, y, PW - MR, y);
+        y += 3.5;
+      };
+
+      // ── HEADER ───────────────────────────────────────
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(26);
-      doc.setTextColor(...C_DARK);
+      doc.setFontSize(22);
+      doc.setTextColor(...INK);
       doc.text("Samuel Abolo", ML, y);
-      y += 2;
-      // Thick primary rule under name
-      doc.setDrawColor(...C_PRIMARY);
-      doc.setLineWidth(1.8);
-      doc.line(ML, y + 1, PW - MR, y + 1);
-      y += 6;
+      y += 5.5;
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(10.5);
-      doc.setTextColor(...C_MID);
-      doc.text("Agentic AI Engineer  ·  Backend Systems  ·  LLM Infrastructure", ML, y);
-      y += 5;
-
-      // Contact — row 1
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C_LIGHT);
-      doc.text(`${profile.email}   |   ${profile.phone}`, ML, y);
+      doc.setFontSize(10);
+      doc.setTextColor(...MID);
+      doc.text("Senior Software Engineer  |  Backend Systems  |  LLM Infrastructure", ML, y);
       y += 4.5;
-      // Contact — row 2
-      doc.text("linkedin.com/in/samuel-abolo-24431a176   |   github.com/tecnosam", ML, y);
-      y += 8;
 
-      // ══ SUMMARY ══════════════════════════════════════
-      section("PROFESSIONAL SUMMARY");
-      body(analysis.tailoredResume.summary, { color: C_BODY });
-      y += 4;
+      doc.setFontSize(9);
+      doc.setTextColor(...MID);
+      const contactLine = [profile.email, profile.phone, "linkedin.com/in/samuel-abolo-24431a176", "github.com/tecnosam"].join("  |  ");
+      const cLines = doc.splitTextToSize(contactLine, CW) as string[];
+      doc.text(cLines, ML, y);
+      y += cLines.length * 4 + 1;
 
-      // ══ KEY SKILLS ═══════════════════════════════════
-      section("KEY SKILLS FOR THIS ROLE");
-      // Skills as a wrapped comma-separated line with primary colour dots
-      body(analysis.tailoredResume.topSkills.join("  ·  "), { color: C_BODY });
-      y += 4;
+      doc.setDrawColor(...RULE);
+      doc.setLineWidth(0.4);
+      doc.line(ML, y, PW - MR, y);
 
-      // ══ EXPERIENCE ═══════════════════════════════════
-      section("RELEVANT EXPERIENCE");
+      // ── SUMMARY ──────────────────────────────────────
+      section("SUMMARY");
+      doc.setFont("helvetica", "normal");
+      wrap(analysis.tailoredResume.summary, 0, 10, BODY);
+      y += 1;
+
+      // ── EXPERIENCE ───────────────────────────────────
+      section("EXPERIENCE");
 
       analysis.tailoredResume.relevantExperience.forEach((exp, i) => {
-        need(20);
-
-        // Company (bold, dark) + period (right, light)
+        // Company + period
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
-        doc.setTextColor(...C_DARK);
+        doc.setTextColor(...INK);
         doc.text(exp.company, ML, y);
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C_LIGHT);
+        doc.setFontSize(9.5);
+        doc.setTextColor(...LIGHT);
         doc.text(exp.period, PW - MR, y, { align: "right" });
-        y += 5;
+        y += L;
 
-        // Role (italic, mid)
+        // Role
         doc.setFont("helvetica", "italic");
-        doc.setFontSize(9);
-        doc.setTextColor(...C_MID);
+        doc.setFontSize(10);
+        doc.setTextColor(...MID);
         doc.text(exp.role, ML, y);
-        y += 5.5;
+        y += L + 0.5;
 
-        // Bullets with primary colour marker
+        // Bullets
+        doc.setFont("helvetica", "normal");
         exp.tailoredBullets.forEach((bullet) => {
-          const bLines = doc.splitTextToSize(bullet, CW - 6) as string[];
-          need(bLines.length * 5);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(9);
-          doc.setTextColor(...C_PRIMARY);
-          doc.text(">", ML, y);
-          doc.setTextColor(...C_BODY);
-          doc.text(bLines, ML + 5, y);
-          y += bLines.length * 5;
+          const bLines = doc.splitTextToSize(bullet, CW - 4.5) as string[];
+          doc.setFontSize(10);
+          doc.setTextColor(...BODY);
+          doc.text("-", ML, y);
+          doc.text(bLines, ML + 4.5, y);
+          y += bLines.length * L;
         });
 
-        if (i < analysis.tailoredResume.relevantExperience.length - 1) y += 4;
+        if (i < analysis.tailoredResume.relevantExperience.length - 1) y += 2.5;
       });
 
-      y += 5;
-
-      // ══ WHY HIRE ═════════════════════════════════════
-      section("WHY HIRE SAMUEL FOR THIS ROLE");
-      // Shaded callout box
-      need(20);
-      const whyLines = doc.splitTextToSize(analysis.tailoredResume.whyHire, CW - 8) as string[];
-      const boxH = whyLines.length * 5 + 6;
-      doc.setFillColor(243, 240, 255); // very light primary tint
-      doc.roundedRect(ML, y, CW, boxH, 2, 2, "F");
+      // ── SKILLS ───────────────────────────────────────
+      section("SKILLS");
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...C_BODY);
-      doc.text(whyLines, ML + 4, y + 4.5);
-      y += boxH + 5;
+      wrap(analysis.tailoredResume.topSkills.join("  |  "), 0, 10, BODY);
 
-      // ══ EDUCATION ════════════════════════════════════
+      // ── EDUCATION ────────────────────────────────────
       section("EDUCATION");
-      need(16);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(...C_DARK);
-      doc.text("Babcock University", ML, y);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C_LIGHT);
-      doc.text("2021 – 2024", PW - MR, y, { align: "right" });
-      y += 5;
-      doc.setFontSize(9);
-      doc.setTextColor(...C_MID);
-      doc.text("B.Sc. Software Engineering  ·  Valedictorian 2020", ML, y);
-      y += 4.5;
-      doc.setFontSize(8.5);
-      doc.setTextColor(...C_LIGHT);
-      doc.text("Thesis: ML-Based Predictive Model for Colorectal Cancer Patient Survival", ML, y);
+      (analysis.tailoredResume.education ?? []).forEach((edu, i, arr) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...INK);
+        doc.text(edu.institution, ML, y);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...LIGHT);
+        doc.text(edu.period, PW - MR, y, { align: "right" });
+        y += L;
+        doc.setFontSize(10);
+        doc.setTextColor(...BODY);
+        doc.text(edu.degree, ML, y);
+        y += L;
+        if (edu.note) {
+          doc.setFontSize(9.5);
+          doc.setTextColor(...MID);
+          const noteLines = doc.splitTextToSize(edu.note, CW) as string[];
+          doc.text(noteLines, ML, y);
+          y += noteLines.length * L;
+        }
+        if (i < arr.length - 1) y += 1.5;
+      });
 
-      // ══ FOOTER (every page) ══════════════════════════
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const totalPages: number = (doc.internal as any).getNumberOfPages();
-      for (let p = 1; p <= totalPages; p++) {
-        doc.setPage(p);
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(7);
-        doc.setTextColor(...C_SUBTLE);
-        doc.text(
-          "AI-tailored resume · samuelabolo.dev · Full resume at /Samuel_Abolo_Resume.pdf",
-          PW / 2, PH - 7, { align: "center" }
-        );
-      }
+      // Single footer on last page only
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...RULE);
+      doc.text("samuelabolo.dev", PW / 2, PH - 6, { align: "center" });
 
       doc.save("Samuel_Abolo_Tailored_Resume.pdf");
     } finally {

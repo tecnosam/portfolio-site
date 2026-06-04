@@ -97,7 +97,11 @@ Generate a customized referral kit in JSON format (return ONLY valid JSON, no ma
       "company": "<company name from Samuel's background>",
       "role": "<exact role title>",
       "period": "<period>",
-      "highlights": ["<bullet tailored to show relevance to THIS specific role>", "<bullet 2>", "<bullet 3>"]
+      "highlights": [
+        "<action verb + what was built + tech used + quantified result. No clause explaining relevance to the role. No 'directly,' 'crucial for,' 'demonstrating,' 'precisely aligning.' No em dashes.>",
+        "<bullet 2 — same format>",
+        "<bullet 3>"
+      ]
     }
   ],
   "relevantSkills": [
