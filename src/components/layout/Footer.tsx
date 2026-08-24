@@ -74,7 +74,7 @@ export default function Footer() {
 
       <div className="border-t border-neutral-content/10 w-full max-w-5xl pt-6 mt-2">
         <p className="text-neutral-content/40 text-xs">
-          © {new Date().getFullYear()} Samuel Abolo · Lagos, Nigeria · Open to Relocation
+          © {new Date().getFullYear()} Samuel Abolo · Lagos, Nigeria
         </p>
       </div>
     </footer>

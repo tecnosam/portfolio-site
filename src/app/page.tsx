@@ -2,13 +2,32 @@ import Image from "next/image";
 import Link from "next/link";
 import DownloadResumeLink from "@/components/ui/DownloadResumeLink";
 import {
-  Mail, ArrowRight, MapPin,
+  Mail, ArrowRight, MapPin, Star, ExternalLink,
   Sparkles, MessageSquare, FileSearch, Zap, HelpCircle,
   TrendingUp, Clock, BarChart3,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon, TwitterIcon } from "@/components/ui/SocialIcons";
 import SkillsMarquee from "@/components/ui/SkillsMarquee";
 import { profile, skills, experience } from "@/lib/data";
+
+const featuredProjects = [
+  {
+    name: "Paperkite",
+    description: "An Electron browser with a chat room built into every tab. Two people on the same page talk in real time, with no call and no invite. The build includes AI agent support over MCP and a self-hosted Go backend.",
+    tags: ["Electron", "TypeScript", "Go", "MCP"],
+    stars: 0,
+    href: "https://github.com/tecnosam/paperkite",
+    demoHref: "https://paperkite.samuelabolo.dev",
+  },
+  {
+    name: "pydongo",
+    description: "A Pydantic-based ORM for MongoDB. Typed models, schema validation, and query building, without dropping into raw driver calls.",
+    tags: ["Python", "MongoDB", "ORM", "Pydantic"],
+    stars: 33,
+    href: "https://github.com/tecnosam/pydongo",
+    demoHref: null,
+  },
+];
 
 export default function HomePage() {
   const recentExperience = experience.slice(0, 3);
@@ -29,11 +48,6 @@ export default function HomePage() {
 
             {/* ── Left content ── */}
             <div className="flex-1 space-y-7 animate-fade-up">
-              <div className="badge badge-success badge-soft gap-2 text-sm py-3 px-4">
-                <span className="size-2 rounded-full bg-success animate-pulse-ring" />
-                Available for new opportunities
-              </div>
-
               <div>
                 <h1 className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tight text-base-content leading-[0.92] mb-4">
                   Samuel<br />
@@ -50,8 +64,6 @@ export default function HomePage() {
               <div className="flex items-center gap-2 text-base text-base-content/40">
                 <MapPin size={15} />
                 <span>{profile.location}</span>
-                <span className="text-primary mx-1">·</span>
-                <span>{profile.openTo}</span>
               </div>
 
               <div className="flex flex-wrap gap-3">
@@ -114,13 +126,63 @@ export default function HomePage() {
       {/* ── Skills Marquee ── */}
       <SkillsMarquee />
 
+      {/* ── Selected Work ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+        <div className="mb-12 flex items-end justify-between flex-wrap gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Portfolio</p>
+            <h2 className="text-2xl sm:text-4xl font-black text-base-content">Selected Work</h2>
+          </div>
+          <Link href="/open-source" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1">
+            All projects <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {featuredProjects.map((p) => (
+            <div key={p.name} className="card bg-base-100 border border-base-300 shadow-sm card-lift">
+              <div className="card-body p-7">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <GithubIcon size={16} className="text-base-content/40" />
+                    <h3 className="font-black text-base-content text-xl">{p.name}</h3>
+                    {p.demoHref && <span className="badge badge-success badge-soft badge-sm">Live</span>}
+                  </div>
+                  {p.stars > 0 && (
+                    <span className="flex items-center gap-1 text-sm font-bold text-base-content/50">
+                      <Star size={14} className="text-warning" /> {p.stars}
+                    </span>
+                  )}
+                </div>
+                <p className="text-base-content/60 text-base leading-relaxed mb-5">{p.description}</p>
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {p.tags.map((tag) => (
+                    <span key={tag} className="badge badge-ghost border border-base-300 badge-md text-base-content/60">{tag}</span>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <a href={p.href} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm gap-2">
+                    <GithubIcon size={14} /> Source
+                  </a>
+                  {p.demoHref && (
+                    <a href={p.demoHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm gap-2">
+                      <ExternalLink size={14} /> Live demo
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── AI Features ── */}
       <section className="bg-base-200 border-b border-base-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-4xl font-black text-base-content mb-3">Explore Interactively</h2>
             <p className="text-base-content/50 text-base max-w-md mx-auto">
-              This portfolio goes beyond static pages - use AI to interact with my profile in ways that actually matter to you.
+              This portfolio goes beyond static pages. Use AI to interact with my background in ways that matter to you.
             </p>
           </div>
 
