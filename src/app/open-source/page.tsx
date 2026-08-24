@@ -4,13 +4,24 @@ import { GithubIcon } from "@/components/ui/SocialIcons";
 
 const pinnedRepos = [
   {
+    name: "paperkite",
+    description: "An Electron-based browser with a chat panel built into every tab. Every URL hashes into a room, so anyone viewing the same page can talk in real time - no accounts, no invites. Ships with AI agent integration (Claude, GPT, Gemini, local Ollama) over MCP, plus Whisper-powered audio and page translation, backed by a self-hostable Go chat service.",
+    tags: ["Electron", "TypeScript", "Go", "gRPC", "AI Agents", "MCP"],
+    stars: 0,
+    forks: 0,
+    status: "Active",
+    featured: true,
+    href: "https://github.com/tecnosam/paperkite",
+    demoHref: "https://paperkite.samuelabolo.dev",
+  },
+  {
     name: "pydongo",
     description: "A lightweight ORM for MongoDB using Pydantic models. Makes working with MongoDB in Python feel as natural as a typed ORM - schema validation, model serialization, and query building out of the box.",
     tags: ["Python", "MongoDB", "ORM", "Pydantic"],
     stars: 33,
     forks: 6,
     status: "Active",
-    featured: true,
+    featured: false,
     href: "https://github.com/tecnosam/pydongo",
   },
   {
@@ -100,12 +111,9 @@ export default function OpenSourcePage() {
           <Star size={13} /> Featured Project
         </h2>
         {pinnedRepos.filter(r => r.featured).map((repo) => (
-          <a
+          <div
             key={repo.name}
-            href={repo.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="card bg-base-100 border-2 border-primary/20 shadow-sm card-lift block"
+            className="card bg-base-100 border-2 border-primary/20 shadow-sm"
           >
             <div className="card-body p-7">
               <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
@@ -121,17 +129,36 @@ export default function OpenSourcePage() {
                   <span className="flex items-center gap-1">
                     <GitFork size={14} /> {repo.forks}
                   </span>
-                  <ExternalLink size={14} />
                 </div>
               </div>
               <p className="text-base-content/60 text-base leading-relaxed mb-4">{repo.description}</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-5">
                 {repo.tags.map((tag) => (
                   <span key={tag} className="badge badge-ghost border border-base-300 badge-md text-base-content/60">{tag}</span>
                 ))}
               </div>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={repo.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline btn-sm gap-2"
+                >
+                  <GithubIcon size={14} /> View on GitHub
+                </a>
+                {repo.demoHref && (
+                  <a
+                    href={repo.demoHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary btn-sm gap-2"
+                  >
+                    <ExternalLink size={14} /> Live Demo
+                  </a>
+                )}
+              </div>
             </div>
-          </a>
+          </div>
         ))}
       </section>
 
