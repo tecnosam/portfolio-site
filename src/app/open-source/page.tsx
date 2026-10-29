@@ -4,13 +4,24 @@ import { GithubIcon } from "@/components/ui/SocialIcons";
 
 const pinnedRepos = [
   {
+    name: "tailwise",
+    description: "An open-source Go engine that decides which LLM agent traces are worth keeping for review. Each trace is scored by a decision model on whether the final answer looks wrong, a keep/drop policy picks the ones to keep, and those are exported over OTLP to Phoenix, Langfuse or any OpenTelemetry back end, each with a plain-English reason. Takes traces over OTLP or a JSON API, queues them in NATS JetStream with retries and dead-letter streams, and ships as a single binary.",
+    tags: ["Go", "OpenTelemetry", "NATS JetStream", "LLM Observability", "AI Agents"],
+    stars: 0,
+    forks: 0,
+    status: "Active",
+    featured: true,
+    href: "https://github.com/tecnosam/tailwise",
+    demoHref: "https://tailwise.samuelabolo.dev",
+  },
+  {
     name: "paperkite",
     description: "An Electron-based browser with a chat panel built into every tab. Every URL hashes into a room, so anyone viewing the same page can talk in real time - no accounts, no invites. Ships with AI agent integration (Claude, GPT, Gemini, local Ollama) over MCP, plus Whisper-powered audio and page translation, backed by a self-hostable Go chat service.",
     tags: ["Electron", "TypeScript", "Go", "gRPC", "AI Agents", "MCP"],
     stars: 0,
     forks: 0,
     status: "Active",
-    featured: true,
+    featured: false,
     href: "https://github.com/tecnosam/paperkite",
     demoHref: "https://paperkite.samuelabolo.dev",
   },

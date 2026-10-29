@@ -12,20 +12,20 @@ import { profile, skills, experience } from "@/lib/data";
 
 const featuredProjects = [
   {
+    name: "Tailwise",
+    description: "An open-source engine that scores LLM agent traces and keeps the ones where the final answer looks wrong. Kept traces go to Phoenix, Langfuse or any OpenTelemetry back end, each with a one-line reason.",
+    tags: ["Go", "OpenTelemetry", "NATS", "LLM Observability"],
+    stars: 0,
+    href: "https://github.com/tecnosam/tailwise",
+    demoHref: "https://tailwise.samuelabolo.dev",
+  },
+  {
     name: "Paperkite",
     description: "An Electron browser with a chat room built into every tab. Two people on the same page talk in real time, with no call and no invite. The build includes AI agent support over MCP and a self-hosted Go backend.",
     tags: ["Electron", "TypeScript", "Go", "MCP"],
     stars: 0,
     href: "https://github.com/tecnosam/paperkite",
     demoHref: "https://paperkite.samuelabolo.dev",
-  },
-  {
-    name: "pydongo",
-    description: "A Pydantic-based ORM for MongoDB. Typed models, schema validation, and query building, without dropping into raw driver calls.",
-    tags: ["Python", "MongoDB", "ORM", "Pydantic"],
-    stars: 33,
-    href: "https://github.com/tecnosam/pydongo",
-    demoHref: null,
   },
 ];
 
