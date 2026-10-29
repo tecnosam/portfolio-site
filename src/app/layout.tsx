@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import SmoothScroll from "@/components/motion/SmoothScroll";
+import Cursor from "@/components/motion/Cursor";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 
@@ -22,13 +24,26 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#090a0d",
+  colorScheme: "dark",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="sam" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      data-theme="sam"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
       <body className="min-h-screen bg-base-100 antialiased">
-        <Navbar />
-        <main className="pt-16">{children}</main>
-        <Footer />
+        <SmoothScroll>
+          <Navbar />
+          <main className="pt-16">{children}</main>
+          <Footer />
+        </SmoothScroll>
+        <Cursor />
+        <div aria-hidden className="grain" />
         <Analytics />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-9TPFCHM5F2" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`

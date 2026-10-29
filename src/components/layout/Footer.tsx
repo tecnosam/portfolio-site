@@ -1,82 +1,89 @@
+"use client";
+
 import Link from "next/link";
+import { useLenis } from "lenis/react";
+import { ArrowUp } from "lucide-react";
 import { profile } from "@/lib/data";
-import { Mail } from "lucide-react";
-import { GithubIcon, LinkedinIcon, TwitterIcon } from "@/components/ui/SocialIcons";
+import { navLinks, aiTools } from "@/lib/site-nav";
+import LagosClock from "@/components/motion/LagosClock";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/open-source", label: "Open Source" },
-  { href: "/communities", label: "Communities" },
-  { href: "/blog", label: "Blog" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/contact", label: "Contact" },
-];
-
-const aiLinks = [
-  { href: "/jd-analyzer", label: "JD Analyzer" },
-  { href: "/ask-sam", label: "Ask Sam" },
-  { href: "/refer-me", label: "Refer Me" },
-  { href: "/how-can-i-help", label: "How Can I Help?" },
+const socials = [
+  { href: profile.socials.github, label: "GitHub" },
+  { href: profile.socials.linkedin, label: "LinkedIn" },
+  { href: profile.socials.twitter, label: "Twitter" },
+  { href: `mailto:${profile.email}`, label: "Email" },
 ];
 
 export default function Footer() {
+  const lenis = useLenis();
+
   return (
-    <footer className="footer footer-center sm:footer-horizontal bg-neutral text-neutral-content p-10">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full max-w-5xl text-left">
-        {/* Brand */}
-        <div className="space-y-3">
-          <Link href="/" className="text-xl font-bold tracking-tight">
-            SA<span className="text-primary">.</span>
-          </Link>
-          <p className="text-neutral-content/60 text-sm leading-relaxed max-w-xs">
-            Senior Software Engineer building production LLM systems and distributed backends.
-          </p>
-          <div className="flex gap-3 pt-1">
-            <a href={profile.socials.github} target="_blank" rel="noopener noreferrer" className="text-neutral-content/50 hover:text-neutral-content transition-colors">
-              <GithubIcon size={17} />
-            </a>
-            <a href={profile.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-neutral-content/50 hover:text-neutral-content transition-colors">
-              <LinkedinIcon size={17} />
-            </a>
-            <a href={profile.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-neutral-content/50 hover:text-neutral-content transition-colors">
-              <TwitterIcon size={17} />
-            </a>
-            <a href={`mailto:${profile.email}`} className="text-neutral-content/50 hover:text-neutral-content transition-colors">
-              <Mail size={17} />
-            </a>
+    <footer className="relative overflow-hidden border-t hairline bg-neutral">
+      <div className="mx-auto max-w-7xl px-5 md:px-8 pt-16 pb-6">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-12">
+          <div className="col-span-2 md:col-span-5 space-y-4">
+            <p className="font-display text-2xl leading-snug max-w-sm">
+              Senior Software Engineer building production AI systems and distributed backends.
+            </p>
+            <p className="eyebrow">
+              Lagos, Nigeria · <LagosClock /> WAT
+            </p>
           </div>
-        </div>
 
-        {/* Pages */}
-        <div>
-          <p className="footer-title text-neutral-content/40 text-[10px] mb-3">Pages</p>
-          <ul className="space-y-2">
-            {navLinks.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className="text-sm text-neutral-content/60 hover:text-neutral-content transition-colors">{l.label}</Link>
+          <FooterList title="Pages" className="md:col-span-2 md:col-start-7">
+            {navLinks.map((l) => <FooterLink key={l.href} href={l.href}>{l.label}</FooterLink>)}
+          </FooterList>
+          <FooterList title="AI tools" className="md:col-span-2">
+            {aiTools.map((l) => <FooterLink key={l.href} href={l.href}>{l.title}</FooterLink>)}
+          </FooterList>
+          <FooterList title="Elsewhere" className="md:col-span-2">
+            {socials.map((s) => (
+              <li key={s.label}>
+                <a href={s.href} target="_blank" rel="noopener noreferrer"
+                  className="text-sm text-base-content/55 transition-colors hover:text-primary">
+                  {s.label}
+                </a>
               </li>
             ))}
-          </ul>
+          </FooterList>
         </div>
 
-        {/* AI */}
-        <div>
-          <p className="footer-title text-neutral-content/40 text-[10px] mb-3">AI Features</p>
-          <ul className="space-y-2">
-            {aiLinks.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className="text-sm text-neutral-content/60 hover:text-neutral-content transition-colors">{l.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      <div className="border-t border-neutral-content/10 w-full max-w-5xl pt-6 mt-2">
-        <p className="text-neutral-content/40 text-xs">
-          © {new Date().getFullYear()} Samuel Abolo · Lagos, Nigeria
+        <p
+          aria-hidden
+          className="text-outline mt-16 select-none whitespace-nowrap font-display leading-[0.8] tracking-tight text-[clamp(3.5rem,15.5vw,15.5rem)] -mx-1"
+        >
+          Samuel Abolo
         </p>
+
+        <div className="mt-6 flex items-center justify-between border-t hairline pt-6">
+          <p className="eyebrow">© {new Date().getFullYear()} Samuel Abolo</p>
+          <button
+            onClick={() => lenis ? lenis.scrollTo(0, { duration: 1.6 }) : window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="eyebrow flex items-center gap-2 transition-colors hover:text-base-content"
+          >
+            Back to top <ArrowUp size={12} />
+          </button>
+        </div>
       </div>
     </footer>
+  );
+}
+
+function FooterList({ title, className, children }: { title: string; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <p className="eyebrow mb-4">{title}</p>
+      <ul className="space-y-2.5">{children}</ul>
+    </div>
+  );
+}
+
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <Link href={href} className="text-sm text-base-content/55 transition-colors hover:text-primary">
+        {children}
+      </Link>
+    </li>
   );
 }

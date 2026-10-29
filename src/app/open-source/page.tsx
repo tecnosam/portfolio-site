@@ -1,6 +1,7 @@
-import { Star, GitFork, GitCommit, Users, ExternalLink } from "lucide-react";
-// GitCommit and Users used in stats strip
+import { Star, GitFork, ArrowUpRight } from "lucide-react";
 import { GithubIcon } from "@/components/ui/SocialIcons";
+import { Reveal, LineReveal } from "@/components/motion/Reveal";
+
 
 const pinnedRepos = [
   {
@@ -77,159 +78,142 @@ const pinnedRepos = [
   },
 ];
 
+
 const statusStyle: Record<string, string> = {
-  Active:   "badge-success badge-soft",
-  Deployed: "badge-info badge-soft",
-  Article:  "badge-primary badge-soft",
-  Archived: "badge-ghost border border-base-300",
-  Learning: "badge-warning badge-soft",
-  WIP:      "badge-warning badge-soft",
+  Active:   "text-success",
+  Deployed: "text-info",
+  Article:  "text-primary",
+  Archived: "text-base-content/40",
+  Learning: "text-warning",
+  WIP:      "text-warning",
 };
 
-export default function OpenSourcePage() {
+const stats = [
+  { icon: <GithubIcon size={14} />, value: "60+", label: "Repositories" },
+  { icon: <ArrowUpRight size={14} />, value: "108", label: "Followers" },
+  { icon: <Star size={14} />, value: "45+", label: "Stars earned" },
+];
+
+function Status({ status }: { status: string }) {
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      <div className="mb-12">
-        <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Portfolio</p>
-        <h1 className="text-3xl sm:text-5xl font-black text-base-content mb-3">Open Source</h1>
-        <p className="text-base-content/50 max-w-xl text-base leading-relaxed">
-          Here are the projects I&apos;ve shipped publicly - from production tools to systems programming exercises.
-        </p>
-      </div>
+    <span className={`flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] ${statusStyle[status]}`}>
+      <span className="size-1.5 rounded-full bg-current" /> {status}
+    </span>
+  );
+}
+
+export default function OpenSourcePage() {
+  const featured = pinnedRepos.filter((r) => r.featured);
+  const pinned = pinnedRepos.filter((r) => !r.featured);
+
+  return (
+    <div className="mx-auto max-w-7xl px-5 md:px-8 pt-16 pb-28 md:pt-24 md:pb-36">
+      <header className="mb-20 md:mb-28 grid gap-10 md:grid-cols-12 md:items-end">
+        <div className="md:col-span-8">
+          <Reveal><p className="eyebrow mb-6">Portfolio · Open source</p></Reveal>
+          <h1 className="text-[clamp(3.5rem,10vw,9rem)] font-light leading-[0.9] tracking-[-0.045em]">
+            <LineReveal lines={["Shipped", <span key="p" className="text-base-content/40">in public.</span>]} />
+          </h1>
+        </div>
+        <Reveal delay={0.3} className="md:col-span-4">
+          <p className="text-base leading-relaxed text-base-content/55">
+            Here are the projects I&apos;ve shipped publicly, from production tools to systems programming exercises.
+          </p>
+        </Reveal>
+      </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-14">
-        {[
-          { icon: <GithubIcon size={16} />, value: "60+",  label: "Repositories" },
-          { icon: <Users size={16} />,     value: "108",  label: "Followers" },
-          { icon: <Star size={16} />,      value: "45+",  label: "Stars earned" },
-        ].map((s) => (
-          <div key={s.label} className="card bg-base-100 border border-base-300 shadow-sm">
-            <div className="card-body p-4 flex-row items-center gap-3">
-              <div className="text-primary">{s.icon}</div>
-              <div>
-                <p className="font-black text-base-content text-xl leading-none">{s.value}</p>
-                <p className="text-base-content/40 text-xs mt-0.5">{s.label}</p>
-              </div>
-            </div>
+      <Reveal className="mb-20 md:mb-28 grid grid-cols-3 border-y hairline">
+        {stats.map((s, i) => (
+          <div key={s.label} className={`py-7 ${i > 0 ? "border-l hairline pl-5 md:pl-8" : ""}`}>
+            <p className="font-display text-4xl md:text-6xl font-light tracking-[-0.04em] leading-none">{s.value}</p>
+            <p className="mt-3 flex items-center gap-2 eyebrow"><span className="text-primary">{s.icon}</span> {s.label}</p>
           </div>
         ))}
-      </div>
+      </Reveal>
 
       {/* Featured */}
-      <section className="mb-14">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-base-content/40 mb-5 flex items-center gap-2">
-          <Star size={13} /> Featured Project
-        </h2>
-        {pinnedRepos.filter(r => r.featured).map((repo) => (
-          <div
-            key={repo.name}
-            className="card bg-base-100 border-2 border-primary/20 shadow-sm"
-          >
-            <div className="card-body p-7">
-              <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <GithubIcon size={18} className="text-base-content/40" />
-                  <h3 className="font-black text-base-content text-2xl">{repo.name}</h3>
-                  <span className={`badge badge-sm ${statusStyle[repo.status]}`}>{repo.status}</span>
+      <section className="mb-24 md:mb-32">
+        <Reveal><p className="eyebrow mb-6">Featured project</p></Reveal>
+        {featured.map((repo) => (
+          <Reveal key={repo.name}>
+            <article className="relative overflow-hidden rounded-3xl border hairline bg-base-200/60 p-7 md:p-12">
+              <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 size-[34rem] rounded-full bg-primary/10 blur-[120px]" />
+              <div className="relative grid gap-10 md:grid-cols-12">
+                <div className="md:col-span-7">
+                  <div className="mb-6 flex items-center gap-5">
+                    <Status status={repo.status} />
+                    <span className="flex items-center gap-1 font-mono text-xs text-base-content/40"><Star size={12} /> {repo.stars}</span>
+                    <span className="flex items-center gap-1 font-mono text-xs text-base-content/40"><GitFork size={12} /> {repo.forks}</span>
+                  </div>
+                  <h2 className="text-[clamp(3rem,8vw,7rem)] font-light leading-[0.9] tracking-[-0.045em]">{repo.name}</h2>
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    {repo.demoHref && (
+                      <a href={repo.demoHref} target="_blank" rel="noopener noreferrer" data-cursor="Visit" className="btn btn-primary gap-2">
+                        Visit site <ArrowUpRight size={16} />
+                      </a>
+                    )}
+                    <a href={repo.href} target="_blank" rel="noopener noreferrer" className="btn btn-outline border-base-content/20 gap-2">
+                      <GithubIcon size={15} /> View on GitHub
+                    </a>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-base-content/50">
-                  <span className="flex items-center gap-1 font-bold">
-                    <Star size={15} className="text-warning" /> {repo.stars}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <GitFork size={14} /> {repo.forks}
-                  </span>
+                <div className="md:col-span-5 md:pt-12">
+                  <p className="text-base md:text-lg leading-relaxed text-base-content/65">{repo.description}</p>
+                  <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.12em] text-base-content/40">
+                    {repo.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
                 </div>
               </div>
-              <p className="text-base-content/60 text-base leading-relaxed mb-4">{repo.description}</p>
-              <div className="flex flex-wrap gap-2 mb-5">
-                {repo.tags.map((tag) => (
-                  <span key={tag} className="badge badge-ghost border border-base-300 badge-md text-base-content/60">{tag}</span>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={repo.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline btn-sm gap-2"
-                >
-                  <GithubIcon size={14} /> View on GitHub
-                </a>
-                {repo.demoHref && (
-                  <a
-                    href={repo.demoHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary btn-sm gap-2"
-                  >
-                    <ExternalLink size={14} /> Live Demo
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
+            </article>
+          </Reveal>
         ))}
       </section>
 
       {/* Pinned */}
-      <section className="mb-14">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-base-content/40 mb-5 flex items-center gap-2">
-          <GithubIcon size={13} /> Pinned Repositories
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {pinnedRepos.filter(r => !r.featured).map((repo) => (
-            <a
-              key={repo.name}
-              href={repo.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="card bg-base-100 border border-base-300 shadow-sm card-lift block"
-            >
-              <div className="card-body p-5">
-                <div className="flex items-start justify-between mb-2 gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <GithubIcon size={14} className="text-base-content/30 flex-shrink-0" />
-                    <h3 className="font-bold text-base-content text-base truncate">{repo.name}</h3>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`badge badge-xs ${statusStyle[repo.status]}`}>{repo.status}</span>
-                    {repo.stars > 0 && (
-                      <span className="flex items-center gap-0.5 text-xs text-base-content/40">
-                        <Star size={11} /> {repo.stars}
-                      </span>
-                    )}
-                  </div>
+      <section className="mb-24 md:mb-32">
+        <Reveal><p className="eyebrow mb-6">Pinned repositories</p></Reveal>
+        <div className="grid gap-px overflow-hidden rounded-3xl border hairline bg-base-content/10 md:grid-cols-2">
+          {pinned.map((repo, i) => (
+            <Reveal key={repo.name} delay={(i % 2) * 0.08} y={16} className="bg-base-100">
+              <a
+                href={repo.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor="Code"
+                className="group flex h-full flex-col p-7 md:p-9 transition-colors duration-500 hover:bg-base-200/70"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <Status status={repo.status} />
+                  {repo.stars > 0 && (
+                    <span className="flex items-center gap-1 font-mono text-xs text-base-content/40"><Star size={12} /> {repo.stars}</span>
+                  )}
                 </div>
-                <p className="text-base-content/55 text-sm leading-relaxed mb-3">{repo.description}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {repo.tags.map((tag) => (
-                    <span key={tag} className="badge badge-ghost badge-sm border border-base-300 text-base-content/50">{tag}</span>
-                  ))}
+                <h3 className="mt-10 font-display text-3xl md:text-4xl font-light tracking-tight transition-colors duration-500 group-hover:text-primary">
+                  {repo.name}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-base-content/50">{repo.description}</p>
+                <div className="mt-auto flex items-end justify-between gap-6 pt-8">
+                  <div className="flex flex-wrap gap-x-3 gap-y-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-base-content/35">
+                    {repo.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                  </div>
+                  <ArrowUpRight size={20} className="shrink-0 text-base-content/30 transition-all duration-700 ease-out-expo group-hover:rotate-45 group-hover:text-primary" />
                 </div>
-              </div>
-            </a>
+              </a>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* CTA */}
-      <div className="card bg-base-200 border border-base-300 text-center">
-        <div className="card-body p-8 gap-4">
-          <p className="text-base-content/60 text-base">60+ Public repos on GitHub</p>
-          <div>
-            <a
-              href="https://github.com/tecnosam"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline btn-md gap-2"
-            >
-              <GithubIcon size={16} /> github.com/tecnosam
-            </a>
-          </div>
-        </div>
-      </div>
+      <Reveal className="flex flex-col items-center gap-6 text-center">
+        <p className="font-display text-3xl md:text-5xl font-light tracking-tight">
+          60+ public repos <span className="text-base-content/40">on GitHub</span>
+        </p>
+        <a href="https://github.com/tecnosam" target="_blank" rel="noopener noreferrer" className="btn btn-outline border-base-content/20 gap-2">
+          <GithubIcon size={16} /> github.com/tecnosam
+        </a>
+      </Reveal>
     </div>
   );
 }

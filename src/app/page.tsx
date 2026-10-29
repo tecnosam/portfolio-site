@@ -1,16 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import Hero from "@/components/home/Hero";
+import Portrait from "@/components/home/Portrait";
+import WorkList, { type Work } from "@/components/home/WorkList";
+import ExperienceList from "@/components/home/ExperienceList";
+import ToolGrid from "@/components/home/ToolGrid";
+import ScrollWords from "@/components/motion/ScrollWords";
+import VelocityMarquee from "@/components/motion/VelocityMarquee";
+import Counter from "@/components/motion/Counter";
+import Magnetic from "@/components/motion/Magnetic";
+import { Reveal, LineReveal } from "@/components/motion/Reveal";
 import DownloadResumeLink from "@/components/ui/DownloadResumeLink";
-import {
-  Mail, ArrowRight, MapPin, Star, ExternalLink,
-  Sparkles, MessageSquare, FileSearch, Zap, HelpCircle,
-  TrendingUp, Clock, BarChart3,
-} from "lucide-react";
-import { GithubIcon, LinkedinIcon, TwitterIcon } from "@/components/ui/SocialIcons";
-import SkillsMarquee from "@/components/ui/SkillsMarquee";
 import { profile, skills, experience } from "@/lib/data";
 
-const featuredProjects = [
+const featuredProjects: Work[] = [
   {
     name: "Tailwise",
     description: "An open-source engine that scores LLM agent traces and keeps the ones where the final answer looks wrong. Kept traces go to Phoenix, Langfuse or any OpenTelemetry back end, each with a one-line reason.",
@@ -27,305 +30,190 @@ const featuredProjects = [
     href: "https://github.com/tecnosam/paperkite",
     demoHref: "https://paperkite.samuelabolo.dev",
   },
+  {
+    name: "pydongo",
+    description: "A Pydantic-based ORM for MongoDB. Typed models, schema validation, and query building, without dropping into raw driver calls.",
+    tags: ["Python", "MongoDB", "ORM", "Pydantic"],
+    stars: 33,
+    href: "https://github.com/tecnosam/pydongo",
+    demoHref: null,
+  },
 ];
 
-export default function HomePage() {
-  const recentExperience = experience.slice(0, 3);
+const stats = [
+  { value: 360, suffix: "×", label: "faster ML pipeline queries", note: "TripAdvisor · 4 h → 40 s" },
+  { value: 90, suffix: "%", label: "lower AI inference latency", note: "TripAdvisor · 15 min → 62 s" },
+  { value: 99.5, decimals: 1, suffix: "%", label: "less time to deploy AI services", note: "2 weeks → 30 min" },
+  { value: 10000, suffix: "+", label: "vehicles tracked in real time", note: "NovaTrack · Go, MQTT, gRPC" },
+];
 
+const marqueeTop = ["Multi-agent systems", "RAG pipelines", "Distributed backends", "Model serving", "MLOps", "Real-time telemetry"];
+const marqueeBottom = ["Python", "Go", "Kubernetes", "Gemini", "pgvector", "Ray", "Snowflake", "Kafka", "gRPC", "Terraform", "FastAPI", "PyTorch"];
+
+const intro =
+  "Five years shipping machine learning, AI systems and distributed backends. I've made ML pipelines [[360× faster,]] cut inference latency by [[90%,]] and taken deployments from [[two weeks to thirty minutes.]] I do my best work where correctness meets scale.";
+
+function SectionHead({ index, eyebrow, title, aside }: { index: string; eyebrow: string; title: React.ReactNode; aside?: React.ReactNode }) {
   return (
-    <div>
-      {/* ── Hero ── */}
-      <section className="relative">
-        {/* Background layer — overflow-hidden here only so backgrounds stay contained
-            while the floating photo badges can overflow outside the section freely */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="dot-grid absolute inset-0 opacity-60" />
-          <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-primary/8 rounded-full blur-[100px]" />
-        </div>
+    <div className="mb-14 md:mb-20 flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <Reveal><p className="eyebrow mb-5">({index}) {eyebrow}</p></Reveal>
+        <h2 className="text-[clamp(2.4rem,5.5vw,4.75rem)] font-light leading-[1] tracking-[-0.035em]">
+          <LineReveal inView lines={Array.isArray(title) ? title : [title]} />
+        </h2>
+      </div>
+      {aside && <Reveal delay={0.2}>{aside}</Reveal>}
+    </div>
+  );
+}
 
-        <div className="relative max-w-6xl mx-auto px-6 pt-10 pb-20 sm:pt-14 sm:pb-24">
-          <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+export default function HomePage() {
+  return (
+    <div className="overflow-x-clip">
+      <Hero />
 
-            {/* ── Left content ── */}
-            <div className="flex-1 space-y-7 animate-fade-up">
-              <div>
-                <h1 className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tight text-base-content leading-[0.92] mb-4">
-                  Samuel<br />
-                  <span className="gradient-text">Abolo</span>
-                </h1>
-                <p className="text-base-content/70 text-xl font-semibold mt-4">{profile.title}</p>
-                <p className="text-base-content/40 text-base mt-1.5">{profile.subtitle}</p>
-              </div>
-
-              <p className="text-base-content/60 leading-relaxed max-w-lg text-base md:text-lg">
-                {profile.tagline}
-              </p>
-
-              <div className="flex items-center gap-2 text-base text-base-content/40">
-                <MapPin size={15} />
+      {/* ── About ── */}
+      <section className="mx-auto max-w-7xl px-5 md:px-8 py-28 md:py-44">
+        <div className="grid gap-12 md:grid-cols-12 md:gap-10">
+          <div className="md:col-span-4">
+            <Reveal><p className="eyebrow mb-6">(01) About</p></Reveal>
+            <div className="max-w-xs md:max-w-none md:sticky md:top-28">
+              <Portrait />
+              <div className="mt-5 flex justify-between eyebrow">
                 <span>{profile.location}</span>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Link href="/contact" className="btn btn-primary gap-2">
-                  Get in touch <ArrowRight size={16} />
-                </Link>
-                <DownloadResumeLink source="hero" />
-              </div>
-
-              <div className="flex items-center gap-1">
-                {[
-                  { href: profile.socials.github,   icon: <GithubIcon size={18} /> },
-                  { href: profile.socials.linkedin, icon: <LinkedinIcon size={18} /> },
-                  { href: profile.socials.twitter,  icon: <TwitterIcon size={18} /> },
-                  { href: `mailto:${profile.email}`, icon: <Mail size={18} /> },
-                ].map(({ href, icon }) => (
-                  <a key={href} href={href} target="_blank" rel="noopener noreferrer"
-                    className="btn btn-ghost btn-square text-base-content/35 hover:text-primary hover:bg-primary/8 transition-colors">
-                    {icon}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Right: photo ── */}
-            <div className="relative flex-shrink-0 animate-fade-up delay-200">
-              {/* Decorative rings */}
-              <div className="absolute -inset-4 rounded-3xl border-2 border-primary/10" />
-              <div className="absolute -inset-8 rounded-3xl border border-primary/5" />
-              {/* Photo */}
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[360px] md:h-[360px]">
-                <Image
-                  src="/sam-pictures/headshot.png"
-                  alt="Samuel Abolo"
-                  fill
-                  className="object-cover rounded-2xl shadow-2xl"
-                  priority
-                />
-              </div>
-              {/* Floating badge - current role */}
-              <div className="absolute -bottom-5 -left-3 sm:-bottom-6 sm:-left-6 animate-float">
-                <div className="card bg-base-100 shadow-xl border border-base-300 px-3 py-2.5 sm:px-5 sm:py-3.5">
-                  <p className="text-[10px] text-base-content/40 uppercase tracking-widest mb-0.5">Currently at</p>
-                  <p className="text-sm sm:text-base font-black text-base-content">Boostr</p>
-                  <p className="text-xs sm:text-sm text-primary font-medium">Agentic AI Platform</p>
-                </div>
-              </div>
-              {/* Floating badge - years */}
-              <div className="absolute -top-4 -right-3 sm:-top-5 sm:-right-5 animate-float" style={{ animationDelay: "2.5s" }}>
-                <div className="card bg-primary text-primary-content shadow-xl px-3 py-2 sm:px-4 sm:py-3 text-center">
-                  <p className="text-xl sm:text-2xl font-black leading-none">5+</p>
-                  <p className="text-[10px] font-medium opacity-80 mt-0.5">Years Shipping<br />Production Systems</p>
-                </div>
+                <span>{profile.openTo}</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ── Skills Marquee ── */}
-      <SkillsMarquee />
-
-      {/* ── Selected Work ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        <div className="mb-12 flex items-end justify-between flex-wrap gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Portfolio</p>
-            <h2 className="text-2xl sm:text-4xl font-black text-base-content">Selected Work</h2>
+          <div className="md:col-span-8 md:pt-14">
+            <ScrollWords
+              text={intro}
+              className="font-display text-[clamp(1.9rem,3.7vw,3.5rem)] font-light leading-[1.14] tracking-[-0.02em]"
+            />
+            <Reveal className="mt-14 grid gap-8 sm:grid-cols-2 max-w-2xl">
+              <p className="text-base leading-relaxed text-base-content/55">
+                Right now I&apos;m architecting multi-agent orchestration on Vertex AI and Gemini at Boostr. Before that I
+                built AI platform tooling at TripAdvisor, real-time telematics in Go, and pricing models in TensorFlow.
+              </p>
+              <p className="text-base leading-relaxed text-base-content/55">
+                I&apos;m comfortable anywhere from training a model to owning the Kubernetes it runs on, and I
+                care about the parts most people skip: evals, observability and cost.
+              </p>
+            </Reveal>
           </div>
-          <Link href="/open-source" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1">
-            All projects <ArrowRight size={14} />
-          </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {featuredProjects.map((p) => (
-            <div key={p.name} className="card bg-base-100 border border-base-300 shadow-sm card-lift">
-              <div className="card-body p-7">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <GithubIcon size={16} className="text-base-content/40" />
-                    <h3 className="font-black text-base-content text-xl">{p.name}</h3>
-                    {p.demoHref && <span className="badge badge-success badge-soft badge-sm">Live</span>}
-                  </div>
-                  {p.stars > 0 && (
-                    <span className="flex items-center gap-1 text-sm font-bold text-base-content/50">
-                      <Star size={14} className="text-warning" /> {p.stars}
-                    </span>
-                  )}
-                </div>
-                <p className="text-base-content/60 text-base leading-relaxed mb-5">{p.description}</p>
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {p.tags.map((tag) => (
-                    <span key={tag} className="badge badge-ghost border border-base-300 badge-md text-base-content/60">{tag}</span>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <a href={p.href} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm gap-2">
-                    <GithubIcon size={14} /> Source
-                  </a>
-                  {p.demoHref && (
-                    <a href={p.demoHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm gap-2">
-                      <ExternalLink size={14} /> Live demo
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
+        {/* Numbers */}
+        <div className="mt-28 md:mt-40 grid grid-cols-2 lg:grid-cols-4 border-t hairline">
+          {stats.map((s, i) => (
+            <Reveal
+              key={s.label}
+              delay={i * 0.08}
+              className={`py-8 pr-4 ${i % 2 ? "pl-5 border-l hairline" : ""} ${i > 1 ? "border-t hairline lg:border-t-0" : ""} lg:pl-6 lg:first:pl-0 ${i > 0 ? "lg:border-l" : ""}`}
+            >
+              <p className="font-display font-light tracking-[-0.04em] leading-none text-[clamp(2.75rem,5.5vw,5rem)]">
+                <Counter value={s.value} decimals={s.decimals} />
+                <span className="text-primary">{s.suffix}</span>
+              </p>
+              <p className="mt-4 text-sm text-base-content/65">{s.label}</p>
+              <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-base-content/35">{s.note}</p>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* ── AI Features ── */}
-      <section className="bg-base-200 border-b border-base-300">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-4xl font-black text-base-content mb-3">Explore Interactively</h2>
-            <p className="text-base-content/50 text-base max-w-md mx-auto">
-              This portfolio goes beyond static pages. Use AI to interact with my background in ways that matter to you.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {[
-              {
-                href: "/jd-analyzer",
-                icon: <FileSearch size={28} />,
-                title: "JD Analyzer",
-                desc: "Paste or upload any job description and get a 1–100 fit score, highlighted strengths, gap analysis, and a resume tailored to that exact role.",
-                color: "text-primary",
-                bg: "bg-base-100 hover:border-primary/30 hover:bg-primary/5",
-                tag: "Most Popular",
-              },
-              {
-                href: "/ask-sam",
-                icon: <MessageSquare size={28} />,
-                title: "Ask About Sam",
-                desc: "Chat with an AI that knows my full background - skills, experience, projects, hobbies, and what I'm looking for next.",
-                color: "text-info",
-                bg: "bg-base-100 hover:border-info/30 hover:bg-info/5",
-                tag: null,
-              },
-              {
-                href: "/refer-me",
-                icon: <Zap size={28} />,
-                title: "Refer Me",
-                desc: "Everything you need to write a strong referral. Enter a role or upload a JD and get a customized pitch, key strengths, and achievements.",
-                color: "text-warning",
-                bg: "bg-base-100 hover:border-warning/30 hover:bg-warning/5",
-                tag: "AI Customized",
-              },
-              {
-                href: "/how-can-i-help",
-                icon: <HelpCircle size={28} />,
-                title: "How Can I Help?",
-                desc: "Share your business context and tech stack. Get a specific, honest breakdown of how Samuel Abolo can add value to your team.",
-                color: "text-success",
-                bg: "bg-base-100 hover:border-success/30 hover:bg-success/5",
-                tag: null,
-              },
-            ].map((item) => (
-              <Link key={item.href} href={item.href}
-                className={`group card border border-base-300 shadow-sm ${item.bg} transition-all duration-200 card-lift`}>
-                <div className="card-body p-6 md:p-8 gap-4">
-                  <div className="flex items-start justify-between">
-                    <div className={`p-3 rounded-xl bg-base-200 ${item.color}`}>{item.icon}</div>
-                    {item.tag && <span className="badge badge-soft badge-sm text-base-content/50 border border-base-300">{item.tag}</span>}
-                  </div>
-                  <div>
-                    <p className="font-black text-base-content text-xl mb-2">{item.title}</p>
-                    <p className="text-base-content/55 text-base leading-relaxed">{item.desc}</p>
-                  </div>
-                  <div className={`flex items-center gap-1.5 text-sm font-semibold ${item.color} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                    Try it now <ArrowRight size={14} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+      {/* ── Selected work ── */}
+      <section className="mx-auto max-w-7xl px-5 md:px-8 pb-28 md:pb-40">
+        <SectionHead
+          index="02"
+          eyebrow="Selected work"
+          title={["Built in the open"]}
+          aside={
+            <Link href="/open-source" className="group flex items-center gap-2 text-sm text-base-content/60 transition-colors hover:text-primary">
+              All projects <ArrowRight size={15} className="transition-transform duration-500 group-hover:translate-x-1" />
+            </Link>
+          }
+        />
+        <WorkList items={featuredProjects} />
       </section>
 
-      {/* ── Skills ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        <div className="mb-12">
-          <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Expertise</p>
-          <h2 className="text-2xl sm:text-4xl font-black text-base-content">Skills &amp; Stack</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {skills.map((sg) => (
-            <div key={sg.category} className="card bg-base-100 border border-base-300 card-lift shadow-sm">
-              <div className="card-body p-6">
-                <div className="flex items-center justify-between gap-3 mb-4">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="shrink-0 text-2xl">{sg.icon}</span>
-                    <h3 className="truncate font-black text-base-content text-lg">{sg.category}</h3>
-                  </div>
-                  <span className="badge badge-ghost shrink-0 whitespace-nowrap border border-base-300 text-base-content/40 text-xs">
-                    {sg.items.length} skills
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {sg.items.map((item) => (
-                    <span key={item} className="badge badge-ghost border border-base-300 badge-md text-base-content/65 font-medium">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+      {/* ── Marquee + stack ── */}
+      <section className="border-y hairline py-10 md:py-14">
+        <VelocityMarquee
+          items={marqueeTop}
+          baseVelocity={-1.6}
+          className="font-display text-[clamp(3rem,8vw,7.5rem)] font-light leading-[1.05] tracking-[-0.03em]"
+        />
+        <VelocityMarquee
+          items={marqueeBottom}
+          baseVelocity={1.6}
+          className="text-outline font-display text-[clamp(3rem,8vw,7.5rem)] font-light leading-[1.05] tracking-[-0.03em]"
+        />
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 md:px-8 py-24 md:py-32">
+        <div className="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {skills.map((group, i) => (
+            <Reveal key={group.category} delay={(i % 3) * 0.08}>
+              <p className="eyebrow mb-4 flex items-center gap-3">
+                <span className="text-primary">0{i + 1}</span> {group.category}
+              </p>
+              <p className="text-base leading-[1.9] text-base-content/60">
+                {group.items.join(" / ")}
+              </p>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── Experience ── */}
-      <section className="bg-base-200 border-t border-base-300">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-          <div className="mb-12 flex items-end justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-widest text-primary mb-3">Career</p>
-              <h2 className="text-2xl sm:text-4xl font-black text-base-content">Experience</h2>
-            </div>
-            <DownloadResumeLink source="experience" variant="link">
-              View Resume
-            </DownloadResumeLink>
-          </div>
+      <section className="mx-auto max-w-7xl px-5 md:px-8 pb-28 md:pb-40">
+        <SectionHead
+          index="03"
+          eyebrow="Experience"
+          title={["Where I've been", <span key="s" className="text-base-content/40">shipping</span>]}
+          aside={<DownloadResumeLink source="experience" variant="link">View resume</DownloadResumeLink>}
+        />
+        <ExperienceList roles={experience} />
+      </section>
 
-          <div className="space-y-5">
-            {recentExperience.map((exp, i) => (
-              <div key={i}
-                className={`card bg-base-100 border shadow-sm card-lift ${exp.current ? "border-primary/30" : "border-base-300"}`}>
-                <div className="card-body p-6 md:p-8">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
-                    <div>
-                      <div className="flex items-center gap-3 flex-wrap mb-1">
-                        <h3 className="font-black text-base-content text-xl">{exp.company}</h3>
-                        {exp.current && (
-                          <div className="badge badge-success badge-soft gap-1.5">
-                            <span className="size-1.5 rounded-full bg-success animate-pulse" />
-                            Current
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-primary font-bold text-base">{exp.role}</p>
-                      <p className="text-base-content/45 text-sm mt-1">{exp.period} · {exp.location}</p>
-                    </div>
-                    <div className="text-3xl font-black text-base-content/6 select-none hidden md:block">
-                      0{i + 1}
-                    </div>
-                  </div>
-                  <ul className="space-y-3">
-                    {exp.highlights.slice(0, 3).map((h, j) => (
-                      <li key={j} className="flex gap-3 text-base-content/65 text-base leading-relaxed">
-                        <span className="text-primary mt-1 flex-shrink-0 font-bold">·</span>
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ── AI tools ── */}
+      <section className="mx-auto max-w-7xl px-5 md:px-8 pb-28 md:pb-40">
+        <SectionHead
+          index="04"
+          eyebrow="Interactive"
+          title={["Don't just read about me.", <span key="a" className="text-primary">Ask.</span>]}
+          aside={
+            <p className="max-w-xs text-sm leading-relaxed text-base-content/50">
+              Four AI tools that know my full background and answer the question you actually came with.
+            </p>
+          }
+        />
+        <ToolGrid />
+      </section>
+
+      {/* ── Contact ── */}
+      <section className="relative overflow-hidden border-t hairline">
+        <div aria-hidden className="pointer-events-none absolute left-1/2 top-full size-[60rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-[140px]" />
+        <div className="relative mx-auto max-w-7xl px-5 md:px-8 py-32 md:py-48 text-center">
+          <Reveal><p className="eyebrow mb-8">(05) Contact</p></Reveal>
+          <h2 className="mx-auto max-w-5xl text-[clamp(3rem,8.5vw,8rem)] font-light leading-[0.95] tracking-[-0.045em]">
+            <LineReveal inView lines={["Let's build something", <span key="t" className="text-base-content/40">that ships.</span>]} />
+          </h2>
+          <Reveal delay={0.3} className="mt-14 flex flex-col items-center gap-8">
+            <Magnetic strength={0.45}>
+              <Link
+                href="/contact"
+                data-cursor="Hello"
+                className="flex size-40 md:size-44 items-center justify-center rounded-full bg-primary text-primary-content text-lg font-medium transition-transform duration-700 ease-out-expo hover:scale-105"
+              >
+                Say hello
+              </Link>
+            </Magnetic>
+            <a href={`mailto:${profile.email}`} className="font-mono text-sm text-base-content/50 transition-colors hover:text-primary">
+              {profile.email}
+            </a>
+          </Reveal>
         </div>
       </section>
     </div>
